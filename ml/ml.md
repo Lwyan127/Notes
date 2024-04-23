@@ -325,3 +325,15 @@ f = np.dot(w, x) + b
 
 - L2正则化后的梯度下降
   - 与线性回归公式一样，除了预测算法 $f_{\vec{w},b}(\vec{x}) = \frac{1}{1+e^{-(\vec{w} * \vec{x} + b)}}$
+
+#  神经网络（neural network）
+
+![image-20240423232015251](ml.assets/image-20240423232015251.png)
+
+- 层（layer）
+  - 输入层（input layer）
+  - 隐藏层（hidden layer）：有若干神经元（neuron），能输出激活值（activation value）
+  - 输出层（output layer）
+- 神经网络又叫多层感知器（multiple perception）
+
+![image-20240423233810646](ml.assets/image-20240423233810646.png)
