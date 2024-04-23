@@ -1365,3 +1365,10 @@ public:
 ```
 
 - **PS：例如我们在写快排的cmp函数的时候，`return left > right` 就是从大到小，`return left < right` 就是从小到大。优先级队列的定义正好反过来了，可能和优先级队列的源码实现有关，估计是底层实现上优先队列队首指向后面，队尾指向最前面的缘故！**
+
+# 字符串
+
+## [344. 反转字符串](https://leetcode.cn/problems/reverse-string/)
+
+- 直接反转就行了
+- 还可以用algorithm库里的reverse函数，对容器中的元素进行反转
