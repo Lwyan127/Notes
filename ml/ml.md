@@ -222,16 +222,16 @@ f = np.dot(w, x) + b
 
     ![image-20240320151239614](ml.assets/image-20240320151239614.png)
 
-- $f_{\vec{w},b}(\vec{x}) = g(\vec{w} * \vec{x} + b) = \frac{1}{1+e^{-(\vec{w} * \vec{x} + b)}}$
+- $f_{\vec{w},b}(\vec{x}) = g(\vec{w} * \vec{x} + b) = \frac{1}{1+e^{-(\vec{w} \cdot \vec{x} + b)}}$
 
   -  输入 $\vec{x},\vec{w},b$，输出类别是1的概率
   - $f_{\vec{w},b}(\vec{x}) =P(y=1|\vec{x};\vec{w},b)$
   - 输出大于等于0.5，预测类别为1；小于0.5，预测类别为0
     - $f_{\vec{w},b}(\vec{x}) >= 0$
     - $g(z) >= 0$
-    - $z>=0$ 即 $\vec{w} * \vec{x} + b >=0$
+    - $z>=0$ 即 $\vec{w} \cdot \vec{x} + b >=0$
   - **决策边界（decision boundary）**
-    - 即 $z = \vec{w} * \vec{x} + b =0$
+    - 即 $z = \vec{w} \cdot \vec{x} + b =0$
     - 一个线性的边界![image-20240320155214336](ml.assets/image-20240320155214336.png)
     - 一个非线性的边界![image-20240320155344420](ml.assets/image-20240320155344420.png)
 
@@ -264,7 +264,7 @@ f = np.dot(w, x) + b
 
   ![image-20240321150128709](ml.assets/image-20240321150128709.png)
 
-  - 看起来和线性回归的梯度下降算法一样，但是其中的算法 $f_{\vec{w},b}(\vec{x}^{(i)})$ 是逻辑回归的算法，即 $f_{\vec{w},b}(\vec{x}) = \frac{1}{1+e^{-(\vec{w} * \vec{x} + b)}}$
+  - 看起来和线性回归的梯度下降算法一样，但是其中的算法 $f_{\vec{w},b}(\vec{x}^{(i)})$ 是逻辑回归的算法，即 $f_{\vec{w},b}(\vec{x}) = \frac{1}{1+e^{-(\vec{w} \cdot \vec{x} + b)}}$
 
 ## 过拟合（overfitting）
 
@@ -331,9 +331,76 @@ f = np.dot(w, x) + b
 ![image-20240423232015251](ml.assets/image-20240423232015251.png)
 
 - 层（layer）
-  - 输入层（input layer）
-  - 隐藏层（hidden layer）：有若干神经元（neuron），能输出激活值（activation value）
+  - 输入层（input layer）：又叫第0层
+  - 隐藏层（hidden layer）：有若干神经元（neuron）又叫hidden unit，能输出激活值（activation value）
   - 输出层（output layer）
 - 神经网络又叫多层感知器（multiple perception）
 
 ![image-20240423233810646](ml.assets/image-20240423233810646.png)
+
+## 图像感知
+
+- 面部识别
+  - 每一层会由神经网络自己找出需要寻找的特征，同时每一层的特征的窗口大小也会不同，例如第二层的特征是五官，第三层的特征是脸，此时第三层的窗口大小会比第二层更大
+  - ![image-20240424124427719](ml.assets/image-20240424124427719.png)
+- ![image-20240424124721993](ml.assets/image-20240424124721993.png)
+
+## 神经网络层
+
+- 第一层
+  - 三个神经元每一个接受输入向量，使用逻辑函数（sigmoid函数）计算得出一个0到1之间的激活值，因此这个函数又叫激活函数（activation function）
+  - 三个值组成第1层的激活值向量输出
+  - $a_j^{[l]} = g(\vec{w}_j^{[l]} \cdot \vec{a}^{[l-1]} + b_2^{[l]})$
+  - 以上a为激活值，l为第几层，j为这一层的第几个神经元
+  - ![image-20240424125718548](ml.assets/image-20240424125718548.png)
+
+- 输出层
+  - 与中间的隐藏层一样，不过只输出一个激活值，而非一个向量，最后根据是否大于等于0.5进行分类
+  - ![image-20240424130042700](ml.assets/image-20240424130042700.png)
+  - ![image-20240424130232486](ml.assets/image-20240424130232486.png)
+
+## 前向传播（forward propagation）
+
+![image-20240424132805681](ml.assets/image-20240424132805681.png)
+
+## 代码实现
+
+```python
+x = np.array([[0.0, ...245, ...240]])  # 这里表示1 * n的一维向量
+# 用tensorflow表示
+tf.Tensor([[0.0, ...245, ...240]], shape = (1, n), dtype = float32)
+
+layer_1 = Dense(units = 25, activation = 'sigmoid')
+a1 = layer_1(x)
+layer_2 = Dense(units = 15, activation = 'sigmoid')
+a2 = layer_1(a1)
+layer_3 = Dense(units = 1, activation = 'sigmoid')
+a3 = layer_1(a2)
+
+if a3 >= 0.5:
+    yhat = 1
+else:
+    yhat = 0
+```
+
+- 不手动输入每一层的输入输出，聚合成一个神经网络密集流程（intensive flow）
+
+```python
+layer_1 = Dense(units = 25, activation = 'sigmoid')
+a1 = layer_1(x)
+layer_2 = Dense(units = 15, activation = 'sigmoid')
+# 将多层聚合成一个神经网络
+model = Sequential([layer_1, layer_2])
+# 已有的数据：x为输入，y为输出
+x = np.array([200.0, 17.0],
+            [120.0, 5.0],
+            [425.0, 20.0],
+            [212.0, 18.0])
+y = np.array([1, 0, 0, 1])
+model.compile(...)
+# 训练
+model.fit(x, y)
+# 预测
+model.predict(x_new)
+```
+
