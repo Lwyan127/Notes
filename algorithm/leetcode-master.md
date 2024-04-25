@@ -1376,3 +1376,11 @@ public:
 ## [541. 反转字符串 II](https://leetcode.cn/problems/reverse-string-ii/)
 
 - 按照题意reverse即可
+
+## [54. 替换数字](https://kamacoder.com/problempage.php?pid=1064)
+
+- 创建一个新串是ok的
+- 如果不使用额外空间：
+  - 先过一遍找到有多少数字
+  - 扩容 s.resize()
+  - 从后向前填充，不能从前向后，从前向后填充就是O(n^2)的算法了，因为每次添加元素都要将添加元素之后的所有元素整体向后移动
