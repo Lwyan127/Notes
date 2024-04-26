@@ -741,7 +741,7 @@ int main () {
 - size()函数返回的是string对象的元素个数，即有效字符的个数，而capacity()函数返回的是string对象的容量
 - length()函数和size()函数一模一样
 
-## reverse函数和resize函数
+## reserve函数和resize函数
 
 - reserve函数是扩容函数，可以增大capacity的值，resize其实也是扩容函数，但resize改变的是size的值，当size的值增大时自动触发string的扩容机制从而也增大了capacity的值，并且resize在增带size值的时候还会对没有字符的位置初始化，如果没有指定初始化内容就默认初始化为’\0’，而reserve不会进行初始化。
 - 另外，一般情况下reserve函数和resize函数都不能缩容（这个由编译器决定），resize函数只能够将size的值变小，但不会让capacity的值也变小
