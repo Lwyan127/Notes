@@ -364,33 +364,48 @@ https://www.bilibili.com/video/BV1K4411X766
   - 以下为代码实现，与手动方法不同，其利用两个指针直接找重复部分
 
 ```cpp
-void GetNext(string b, int next[]) {
-    int i = 1;
-    int j = 0;
+void getNext(int* next, string s) {
+    // 初始化
     next[0] = 0;
-    while(true) {
-        if (i >= b.length()) break;  // 指向位置超出b的大小，结束
-        if (b[j] != b[i] && j == 0) {
-            next[i] = 0;
-            i++;
-        } else if (b[j] != b[i] && j != 0) {
-            next[i] = 0;
-            j = 0;  
-            // j回到开头还要再比较一次，若直接i++，i可能超出了b.length()，导致最后一次比较没有进行
-            if (b[j] != b[i]) {
-                i++;
-            } else if (b[j] == b[i]) {
-                next[i] = 1;
-                i++;
-                j++;
-            }
-        } else if (b[j] == b[i]) {
-            next[i] = next[i - 1] + 1;
+    int j = 0;
+    int i = 1;
+    // 开始循环
+    while (true) {
+        if (i >= s.size()) break;  // next数组完成
+        if (s[i] == s[j]) {  // 当两个字符相同，例如ababc中的j = 1, i = 3时这时next[3] = 2
+            next[i] = j + 1;
             i++;
             j++;
+        } else if (s[i] != s[j]) {
+            if (j == 0) {  // 为了j - 1不到-1
+                next[i] = 0;
+                i++;
+            } else if (j != 0) {
+                // 最重要的一步，这里j不会跳回开头，而是利用next数组跳到合理的位置
+                // 例如aabaaac
+                // j = 2, i = 5时两个字符不同，则j跳到第2个a，这样下一次比较时next[5] = 2才是正确的
+                j = next[j - 1];
+            }
         }
     }
     return;
+}
+```
+
+```c++
+// 简化的代码
+void GetNext(int* next, const string& s) {
+    int j = 0;
+    next[0] = 0;
+    for(int i = 1; i < s.size(); i++) {
+        while (j > 0 && s[i] != s[j]) { // j要保证大于0，因为下面有取j-1作为数组下标的操作
+            j = next[j - 1]; // 注意这里，是要找前一位的对应的回退位置了
+        }
+        if (s[i] == s[j]) {
+            j++;
+        }
+        next[i] = j;
+    }
 }
 ```
 
