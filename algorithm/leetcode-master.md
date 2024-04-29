@@ -1395,3 +1395,116 @@ public:
 
 - 类似于上一题，将前半段和后半段都反转，最后整体反转
 - algorithm中的reverse函数的时间复杂度是O(n)，因此时间复杂度就是O(n)
+
+## [28. 找出字符串中第一个匹配项的下标](https://leetcode.cn/problems/find-the-index-of-the-first-occurrence-in-a-string/)
+
+- kmp
+- 时间复杂度: O(n + m)
+- 空间复杂度: O(m), 只需要保存字符串needle的前缀表
+- 我写的代码：
+
+```c++
+class Solution {
+public:
+    void getNext(int* next, string s) {
+        // 初始化
+        next[0] = 0;
+        int j = 0;
+        int i = 1;
+        // 开始循环
+        while (true) {
+            if (i >= s.size()) break;  // next数组完成
+            if (s[i] == s[j]) {  // 当两个字符相同，例如ababc中的j = 1, i = 3时这时next[3] = 2
+                next[i] = j + 1;
+                i++;
+                j++;
+            } else if (s[i] != s[j]) {
+                if (j == 0) {  // 为了j - 1不到-1
+                    next[i] = 0;
+                    i++;
+                } else if (j != 0) {
+                    // 最重要的一步，这里j不会跳回开头，而是利用next数组跳到合理的位置
+                    // 例如aabaaac
+                    // j = 2, i = 5时两个字符不同，则j跳到第2个a，这样下一次比较时next[5] = 2才是正确的
+                    j = next[j - 1];
+                }
+            }
+        }
+        return;
+    }
+
+    int strStr(string haystack, string needle) {
+        int ans = -1;  // 第一个匹配项的下标
+        vector<int> next(needle.size());
+        GetNext(&next[0], needle);
+        
+        int i = 0;
+        int j = 0;
+        while (true) {
+            if (j == needle.size()) {
+                ans = i - needle.size();
+                break;
+            }
+            if (i == haystack.size()) break;
+            if (haystack[i] == needle[j]) {
+                i++;
+                j++;
+            } else if (haystack[i] != needle[j]) {
+                if (j == 0) {
+                    i++;
+                } else if (j != 0) {
+                    if (next[j - 1] == 0) {
+                        j = 0;
+                    } else if (next[j - 1] != 0) {
+                        j = next[j - 1];
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+
+- 简化代码为
+
+```c++
+class Solution {ababc
+public:
+	void getNext(int* next, const string& s) {
+        int j = 0;
+        next[0] = 0;
+        for(int i = 1; i < s.size(); i++) {
+            while (j > 0 && s[i] != s[j]) { // j要保证大于0，因为下面有取j-1作为数组下标的操作
+                j = next[j - 1]; // 注意这里，是要找前一位的对应的回退位置了
+            }
+            if (s[i] == s[j]) {
+                j++;
+            }
+            next[i] = j;
+        }
+    }
+
+    int strStr(string haystack, string needle) {
+        if (needle.size() == 0) {
+            return 0;
+        }
+        vector<int> next(needle.size());
+        getNext(&next[0], needle);
+        int j = 0;
+        for (int i = 0; i < haystack.size(); i++) {
+            while(j > 0 && haystack[i] != needle[j]) {
+                j = next[j - 1];
+            }
+            if (haystack[i] == needle[j]) {
+                j++;
+            }
+            if (j == needle.size() ) {
+                return (i - needle.size() + 1);
+            }
+        }
+        return -1;
+    }
+};
+```
+
