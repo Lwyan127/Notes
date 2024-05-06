@@ -363,6 +363,8 @@ https://www.bilibili.com/video/BV1K4411X766
 
   - 以下为代码实现，与手动方法不同，其利用两个指针直接找重复部分
 
+![image-20240502113106250](algorithm.assets/image-20240502113106250.png)
+
 ```cpp
 void getNext(int* next, string s) {
     // 初始化
