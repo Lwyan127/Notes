@@ -1398,7 +1398,12 @@ public:
 
 ## [28. 找出字符串中第一个匹配项的下标](https://leetcode.cn/problems/find-the-index-of-the-first-occurrence-in-a-string/)
 
-- kmp
+### kmp
+
+- kmp，next数组为最长共同前后缀，下面为代码实现图解
+
+![image-20240502113157582](leetcode-master.assets/image-20240502113157582.png)
+
 - 时间复杂度: O(n + m)
 - 空间复杂度: O(m), 只需要保存字符串needle的前缀表
 - 我写的代码：
@@ -1406,7 +1411,7 @@ public:
 ```c++
 class Solution {
 public:
-    void getNext(int* next, string s) {
+    void GetNext(int* next, string s) {
         // 初始化
         next[0] = 0;
         int j = 0;
@@ -1471,7 +1476,7 @@ public:
 ```c++
 class Solution {ababc
 public:
-	void getNext(int* next, const string& s) {
+	void GetNext(int* next, const string& s) {
         int j = 0;
         next[0] = 0;
         for(int i = 1; i < s.size(); i++) {
@@ -1483,6 +1488,7 @@ public:
             }
             next[i] = j;
         }
+        return;
     }
 
     int strStr(string haystack, string needle) {
@@ -1504,6 +1510,35 @@ public:
             }
         }
         return -1;
+    }
+};
+```
+
+### 移动匹配
+
+- 如果一个字符串s有重复子串，则其为
+
+  ![image-20240506220809402](leetcode-master.assets/image-20240506220809402.png)
+
+  则将2个s连接，中间还会出现一个s：
+
+  ![image-20240506220842079](leetcode-master.assets/image-20240506220842079.png)
+
+  这样就可以判断
+
+- 在搜索中间这个s时，将这个连接的串的首字符和尾字符挖掉，这样可以防止找到原本的两个s
+
+- 这里find函数时间复杂度为O(m+n)，因此可以
+
+```c++
+class Solution {
+public:
+    bool repeatedSubstringPattern(string s) {
+        string t = s + s;
+        t.erase(t.begin());
+        t.erase(t.end() - 1); // 掐头去尾
+        if (t.find(s) != std::string::npos) return true; // std::string::npos用于表示一个无效或未找到的位置
+        return false;
     }
 };
 ```
