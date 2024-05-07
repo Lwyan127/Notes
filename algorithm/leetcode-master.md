@@ -1543,3 +1543,126 @@ public:
 };
 ```
 
+# 二叉树
+
+## 二叉树的种类
+
+**满二叉树**
+
+- 深度为k，则有2^k-1个节点
+
+**完全二叉树**
+
+- 除了最后一层都全满，最后一层节点从左到右集中
+- **堆**就是一个完全二叉树
+- ![image-20240507211315530](leetcode-master.assets/image-20240507211315530.png)
+
+**二叉搜索树**
+
+- 若它的左子树不空，则左子树上所有结点的值均小于它的根结点的值；
+- 若它的右子树不空，则右子树上所有结点的值均大于它的根结点的值；
+- 它的左、右子树也分别为二叉排序树
+- ![image-20240507211450829](leetcode-master.assets/image-20240507211450829.png)
+
+**平衡二叉搜索树**
+
+- AVL（Adelson-Velsky and Landis）树
+- 它是一棵空树或它的左右两个子树的高度差的绝对值不超过1，并且左右两个子树都是一棵平衡二叉树。
+
+- **C++中map、set、multimap，multiset的底层实现都是平衡二叉搜索树**，所以map、set的增删操作时间时间复杂度是logn，注意这里没有unordered_map、unordered_set，他们底层实现是哈希表。
+- ![image-20240507211653639](leetcode-master.assets/image-20240507211653639.png)
+
+## 二叉树存储方式
+
+**顺序存储：数组**
+
+- 如果父节点的数组下标是 i，那么它的左孩子就是 i \* 2 + 1，右孩子就是 i \* 2 + 2。
+- ![image-20240507211830735](leetcode-master.assets/image-20240507211830735.png)
+
+**链式存储：链表**
+
+- ![image-20240507211943368](leetcode-master.assets/image-20240507211943368.png)
+
+## 二叉树遍历方式
+
+- 深度优先搜索
+  - 前序遍历：中左右
+  - 中序遍历：左中右
+  - 后序遍历：左右中
+  - 前中后序遍历的逻辑其实都是可以借助栈使用递归的方式来实现
+  - ![image-20240507212347590](leetcode-master.assets/image-20240507212347590.png)
+- 广度优先搜索：层次遍历
+
+## 二叉树定义
+
+```c++
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+```
+
+## 二叉树三个遍历
+
+[144.二叉树的前序遍历](https://leetcode.cn/problems/binary-tree-preorder-traversal/)
+
+[94.二叉树的中序遍历](https://leetcode.cn/problems/binary-tree-inorder-traversal/)
+
+[145.二叉树的后序遍历](https://leetcode.cn/problems/binary-tree-postorder-traversal/)
+
+```c++
+// Definition for a binary tree node.
+struct TreeNode {
+	int val;
+	TreeNode *left;
+	TreeNode *right;
+	TreeNode() : val(0), left(nullptr), right(nullptr) {}
+	TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+	TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+};
+
+// 前序遍历
+class Solution {
+public:
+    vector<int> preorderTraversal(TreeNode* root) {
+        if (root == NULL) return ans;
+        ans.push_back(root->val);
+        preorderTraversal(root->left);
+        preorderTraversal(root->right);
+        return ans;
+    }
+private:
+    vector<int>ans;
+};
+
+// 中序遍历
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        if (root == NULL) return ans;
+        inorderTraversal(root->left);
+        ans.push_back(root->val);
+        inorderTraversal(root->right);
+        return ans;
+    }
+private:
+    vector<int>ans;
+};
+
+// 后序遍历
+class Solution {
+public:
+    vector<int> postorderTraversal(TreeNode* root) {
+        if (root == NULL) return ans;
+        postorderTraversal(root->left);
+        postorderTraversal(root->right);
+        ans.push_back(root->val);
+        return ans;
+    }
+private:
+    vector<int>ans;
+};
+```
+
