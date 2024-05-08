@@ -1545,7 +1545,7 @@ public:
 
 # 二叉树
 
-## 二叉树的种类
+## 种类
 
 **满二叉树**
 
@@ -1572,7 +1572,7 @@ public:
 - **C++中map、set、multimap，multiset的底层实现都是平衡二叉搜索树**，所以map、set的增删操作时间时间复杂度是logn，注意这里没有unordered_map、unordered_set，他们底层实现是哈希表。
 - ![image-20240507211653639](leetcode-master.assets/image-20240507211653639.png)
 
-## 二叉树存储方式
+## 存储方式
 
 **顺序存储：数组**
 
@@ -1583,7 +1583,7 @@ public:
 
 - ![image-20240507211943368](leetcode-master.assets/image-20240507211943368.png)
 
-## 二叉树遍历方式
+## 遍历方式
 
 - 深度优先搜索
   - 前序遍历：中左右
@@ -1593,7 +1593,7 @@ public:
   - ![image-20240507212347590](leetcode-master.assets/image-20240507212347590.png)
 - 广度优先搜索：层次遍历
 
-## 二叉树定义
+## 定义
 
 ```c++
 struct TreeNode {
@@ -1604,7 +1604,7 @@ struct TreeNode {
 };
 ```
 
-## 二叉树三个遍历
+## 二叉树递归遍历
 
 [144.二叉树的前序遍历](https://leetcode.cn/problems/binary-tree-preorder-traversal/)
 
@@ -1663,6 +1663,76 @@ public:
     }
 private:
     vector<int>ans;
+};
+```
+
+## 二叉树迭代遍历
+
+题目同上，递归显然使用栈实现的，那么也可以使用迭代与栈来实现三种遍历
+
+```c++
+// 前序遍历 压栈然后取出与访问节点顺序相同，所以可以不用指针来指示节点到哪里了
+class Solution {
+public:
+    vector<int> preorderTraversal(TreeNode* root) {
+        vector<int> ans;
+        stack<TreeNode*> st;
+        st.push(root);
+        TreeNode* p;
+        if (!root) return ans;
+        while (!st.empty()) {
+            p = st.top();  // 用栈顶来放下一层的中
+            st.pop();
+            ans.push_back(p->val);
+            if (p->right) st.push(p->right);  // 先进后出，所以先进右
+            if (p->left) st.push(p->left);
+        }
+        return ans;
+    }
+};
+
+// 中序遍历 压栈然后取出与访问节点顺序不同，因此需要额外指针来指示节点
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> ans;
+        stack<TreeNode*> st;
+        TreeNode* p = root;
+        if (!root) return ans;
+        while (p || !st.empty()) {
+            if (p) {  // 一路找左
+                st.push(p);
+                p = p->left;
+            } else {  // 左找完了，放中，向右
+                p = st.top();
+                st.pop();
+                ans.push_back(p->val);
+                p = p->right;
+            }
+        }
+        return ans;
+    }
+};
+
+// 后序遍历 仔细过一遍二叉树会发现：前后中，相当于中前后里前后顺序换一下，然后reverse一下，因此直接使用前序遍历的代码即可
+class Solution {
+public:
+    vector<int> postorderTraversal(TreeNode* root) {
+        vector<int> ans;
+        stack<TreeNode*> st;
+        st.push(root);
+        TreeNode* p;
+        if (!root) return ans;
+        while (!st.empty()) {
+            p = st.top();
+            st.pop();
+            ans.push_back(p->val);
+            if (p->left) st.push(p->left);  // 换前后顺序
+            if (p->right) st.push(p->right);
+        }
+        reverse(ans.begin(), ans.end());  // reverse一下
+        return ans;
+    }
 };
 ```
 
