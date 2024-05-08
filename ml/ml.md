@@ -397,10 +397,14 @@ x = np.array([200.0, 17.0],
             [425.0, 20.0],
             [212.0, 18.0])
 y = np.array([1, 0, 0, 1])
-model.compile(...)
-# 训练
+model.compile(
+    loss = tf.keras.losses.BinaryCrossentropy(),
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.01),
+)
+# 训练  model.compile defines a loss function and specifies a compile optimization
 model.fit(x, y)
 # 预测
 model.predict(x_new)
 ```
 
+   ![image-20240508234146214](ml.assets/image-20240508234146214.png)
