@@ -1786,3 +1786,142 @@ if (node != NULL) {
 }
 ```
 
+## 二叉树层序遍历
+
+[102. 二叉树的层序遍历](https://leetcode.cn/problems/binary-tree-level-order-traversal/)
+
+```c++
+// 我这里用endoflevel来表示这一层结束了
+class Solution {
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector<vector<int>> ans;
+        queue<TreeNode*> q;
+        TreeNode* p;
+        vector<int> level;
+
+        if (root == NULL) return ans;
+
+        TreeNode* endoflevel = root;
+        q.push(root);
+
+        while (!q.empty()) {
+            p = q.front();
+            q.pop();
+            level.push_back(p->val);
+            
+            if (p->left) q.push(p->left);
+            if (p->right) q.push(p->right);
+
+            if (p == endoflevel) {  // 这一层取完了
+                ans.push_back(level);
+                level.clear();
+                endoflevel = q.back();
+            }
+        }
+        return ans;
+    }
+};
+
+// 标准代码，每次用size取一下queue中元素的个数即这一层系欸但的个数，然后用一个for来控制取这一层的所有节点
+class Solution {
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        queue<TreeNode*> que;
+        if (root != NULL) que.push(root);
+        vector<vector<int>> result;
+        while (!que.empty()) {
+            int size = que.size();
+            vector<int> vec;
+            // 这里一定要使用固定大小size，不要使用que.size()，因为que.size是不断变化的
+            for (int i = 0; i < size; i++) {
+                TreeNode* node = que.front();
+                que.pop();
+                vec.push_back(node->val);
+                if (node->left) que.push(node->left);
+                if (node->right) que.push(node->right);
+            }
+            result.push_back(vec);
+        }
+        return result;
+    }
+};
+
+// 递归代码
+# 递归法
+class Solution {
+public:
+    void order(TreeNode* cur, vector<vector<int>>& result, int depth)
+    {
+        if (cur == nullptr) return;
+        if (result.size() == depth) result.push_back(vector<int>());
+        result[depth].push_back(cur->val);
+        order(cur->left, result, depth + 1);
+        order(cur->right, result, depth + 1);
+    }
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector<vector<int>> result;
+        int depth = 0;
+        order(root, result, depth);
+        return result;
+    }
+};
+```
+
+[107. 二叉树的层序遍历 II](https://leetcode.cn/problems/binary-tree-level-order-traversal-ii/)
+
+将每一层放入ans时放到最前
+
+```c++
+ans.insert(ans.begin(), level);
+```
+
+不过这样时间复杂度比较高为O(n)，要么就用上面的递归，用depth，直接可以ans[depth].push_back，这样插入的复杂度为O(1)
+
+[199. 二叉树的右视图](https://leetcode.cn/problems/binary-tree-right-side-view/)
+
+用我的代码改一下，endoflevel就是所有的答案，放入ans中即可。
+
+[637. 二叉树的层平均值](https://leetcode.cn/problems/average-of-levels-in-binary-tree/)
+
+在每层求和，在这层结束时求平均值放入ans
+
+[429. N 叉树的层序遍历](https://leetcode.cn/problems/n-ary-tree-level-order-traversal/)
+
+每个节点将其子节压入队列：
+
+```c++
+for (auto child: node->children) {
+	que.push(child);
+}
+```
+
+[515. 在每个树行中找最大值](https://leetcode.cn/problems/find-largest-value-in-each-tree-row/)
+
+立个flag找最大值即可
+
+[116. 填充每个节点的下一个右侧节点指针](https://leetcode.cn/problems/populating-next-right-pointers-in-each-node/)
+
+[117. 填充每个节点的下一个右侧节点指针 II](https://leetcode.cn/problems/populating-next-right-pointers-in-each-node-ii/)
+
+```c++
+if (p == endoflevel) {  // 这一层取完了
+    p->next = NULL;
+    endoflevel = q.back();
+} else {
+    p->next = q.front();
+}
+```
+
+[104. 二叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-binary-tree/)
+
+设个depth，每结束一层加一
+
+[111. 二叉树的最小深度](https://leetcode.cn/problems/minimum-depth-of-binary-tree/)
+
+```c++
+// 这里判断是depth还是上一层的层数，因此要加1
+// 因为是一层一层下去的，所以一旦是叶子就是最小深度
+if (!p->left && !p->right) return (depth + 1); 
+```
+
