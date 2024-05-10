@@ -1925,3 +1925,6 @@ if (p == endoflevel) {  // 这一层取完了
 if (!p->left && !p->right) return (depth + 1); 
 ```
 
+## [226. 翻转二叉树](https://leetcode.cn/problems/invert-binary-tree/)
+
+可以使用前序遍历，后序遍历和层序遍历反转，中序遍历可能会将某些节点反转两次比较麻烦
