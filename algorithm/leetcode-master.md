@@ -1583,6 +1583,50 @@ public:
 
 - ![image-20240507211943368](leetcode-master.assets/image-20240507211943368.png)
 
+**将树从数组转换为链表：**
+
+```c++
+class Tree{
+public:
+    TreeNode* CreateTree(vector<int> tree_array, TreeNode* node, int idx) {
+        // tree_array为树的数组形式，node为当前节点，idx为当前节点在数组中的位置
+        if (2 * idx + 1 < tree_array.size()) {
+            if (tree_array[2 * idx + 1] == NULL) {  // 特殊处理NULL，因为数组中的NULL为0为值
+                node->left = NULL;
+            } else {
+                TreeNode* left_child = new TreeNode(tree_array[2 * idx + 1]);
+                node->left = left_child;
+                CreateTree(tree_array, left_child, 2 * idx + 1);
+            }
+        }
+        if (2 * idx + 2 < tree_array.size()) {
+            if (tree_array[2 * idx + 2] == NULL) {
+                node->right = NULL;
+            } else {
+                TreeNode* right_child = new TreeNode(tree_array[2 * idx + 2]);
+                node->right = right_child;
+                CreateTree(tree_array, right_child, 2 * idx + 2);
+            }
+        }
+        return node;
+    }
+};
+
+int main() {
+    vector<int> tree_array{1, 2, 2, 3, 4, 4, 3};
+    // vector<int> tree_array{1, 2, 2, NULL, 3, NULL, 3};
+
+    TreeNode* root = new TreeNode(tree_array[0]);  // 创建根节点
+    Tree tree;
+    root = tree.CreateTree(tree_array, root, 0);
+    
+    system("pause");
+    return 0;
+}
+```
+
+
+
 ## 遍历方式
 
 - 深度优先搜索
@@ -1928,3 +1972,46 @@ if (!p->left && !p->right) return (depth + 1);
 ## [226. 翻转二叉树](https://leetcode.cn/problems/invert-binary-tree/)
 
 可以使用前序遍历，后序遍历和层序遍历反转，中序遍历可能会将某些节点反转两次比较麻烦
+
+## [101. 对称二叉树](https://leetcode.cn/problems/symmetric-tree/)
+
+- 我的想法：
+
+  层序遍历，然后NULL的位置就放NULL，将每一层的前半用栈来倒序，然后和后半来对比。
+
+  但是有两个问题：1.这样的话空间复杂度比较大，相当于需要2^(depth-1)的栈的空间和队列的空间；2.NULL没法放进队列和栈里，需要新创建一个节点放一个超过题目范围的值来标记NULL。
+
+- 标答：
+
+  实质是比较左子树和右子树两棵树。
+
+  这样的话就是左子树以后序遍历：前后中，右子树反过来（非前序遍历，实际为前序遍历完的顺序倒过来）：后前中。
+
+  然后递归来完成。
+
+```c++
+class Solution {
+public:
+    bool compare(TreeNode* left, TreeNode* right) {
+        // 首先排除空节点的情况
+        if (left == NULL && right != NULL) return false;
+        else if (left != NULL && right == NULL) return false;
+        else if (left == NULL && right == NULL) return true;
+        // 排除了空节点，再排除数值不相同的情况
+        else if (left->val != right->val) return false;
+
+        // 此时就是：左右节点都不为空，且数值相同的情况
+        // 此时才做递归，做下一层的判断
+        bool outside = compare(left->left, right->right);   // 左子树：左、 右子树：右
+        bool inside = compare(left->right, right->left);    // 左子树：右、 右子树：左
+        bool isSame = outside && inside;                    // 左子树：中、 右子树：中 （逻辑处理）
+        return isSame;
+
+    }
+    bool isSymmetric(TreeNode* root) {
+        if (root == NULL) return true;
+        return compare(root->left, root->right);
+    }
+};
+```
+
