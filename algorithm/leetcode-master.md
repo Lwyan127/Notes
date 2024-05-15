@@ -2015,3 +2015,10 @@ public:
 };
 ```
 
+## [222. 完全二叉树的节点个数](https://leetcode.cn/problems/count-complete-tree-nodes/)
+
+层次遍历遍历一遍完事了。
+
+## [559. N 叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-n-ary-tree/)
+
+层序遍历一遍完事了。
