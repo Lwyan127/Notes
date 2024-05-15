@@ -365,27 +365,20 @@ f = np.dot(w, x) + b
 
 ## 代码实现
 
-```python
-x = np.array([[0.0, ...245, ...240]])  # 这里表示1 * n的一维向量
-# 用tensorflow表示
-tf.Tensor([[0.0, ...245, ...240]], shape = (1, n), dtype = float32)
+模型训练的具体过程：
 
-layer_1 = Dense(units = 25, activation = 'sigmoid')
-a1 = layer_1(x)
-layer_2 = Dense(units = 15, activation = 'sigmoid')
-a2 = layer_1(a1)
-layer_3 = Dense(units = 1, activation = 'sigmoid')
-a3 = layer_1(a2)
+1. 设置 $f_{\vec{w},b}(\vec{x})$，即定义这个模型和参数
+2. 设置代价函数
+3. 在数据训练集上最小化代价函数
 
-if a3 >= 0.5:
-    yhat = 1
-else:
-    yhat = 0
-```
-
-- 不手动输入每一层的输入输出，聚合成一个神经网络密集流程（intensive flow）
+以下使用tensorflow实现
 
 ```python
+import tensorflow as tf
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense
+
+'''设置模型和参数'''
 layer_1 = Dense(units = 25, activation = 'sigmoid')
 a1 = layer_1(x)
 layer_2 = Dense(units = 15, activation = 'sigmoid')
@@ -397,12 +390,16 @@ x = np.array([200.0, 17.0],
             [425.0, 20.0],
             [212.0, 18.0])
 y = np.array([1, 0, 0, 1])
+
+'''设置代价函数'''
+# model.compile defines a loss function and specifies a compile optimization
 model.compile(
     loss = tf.keras.losses.BinaryCrossentropy(),
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.01),
 )
-# 训练  model.compile defines a loss function and specifies a compile optimization
-model.fit(x, y)
+
+'''训练'''
+model.fit(x, y, epochs = 100)  # epochs代表训练100次
 # 预测
 model.predict(x_new)
 ```
