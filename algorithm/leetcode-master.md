@@ -1959,7 +1959,39 @@ if (p == endoflevel) {  // 这一层取完了
 
 [104. 二叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-binary-tree/)
 
-设个depth，每结束一层加一
+- 层序遍历：设个depth，每结束一层加一
+
+- 从上到下求深度，用前序遍历
+
+  ```c++
+  class Solution {
+  public:
+      int result;
+      void getDepth(TreeNode* node, int depth) {
+          result = depth > result ? depth : result; // 中
+  
+          if (node->left == NULL && node->right == NULL) return ;
+  
+          if (node->left) { // 左
+              depth++;    // 深度+1
+              getDepth(node->left, depth);
+              depth--;    // 回溯，深度-1
+          }
+          if (node->right) { // 右
+              depth++;    // 深度+1
+              getDepth(node->right, depth);
+              depth--;    // 回溯，深度-1
+          }
+          return ;
+      }
+      int maxDepth(TreeNode* root) {
+          result = 0;
+          if (root == NULL) return result;
+          getDepth(root, 1);
+          return result;
+      }
+  };
+  ```
 
 [111. 二叉树的最小深度](https://leetcode.cn/problems/minimum-depth-of-binary-tree/)
 
@@ -1968,6 +2000,17 @@ if (p == endoflevel) {  // 这一层取完了
 // 因为是一层一层下去的，所以一旦是叶子就是最小深度
 if (!p->left && !p->right) return (depth + 1); 
 ```
+
+## 二叉树深度与高度
+
+- 如图，为深度与高度的不同。
+
+![image-20240516214013747](leetcode-master.assets/image-20240516214013747.png)
+
+- 看起来就是一个正过来数、一个反过来数的关系，似乎做题时只要倒过来即可，然而并非如此。**深度从上到下递增得到，高度从下到上递增得到**，因此两者使用的遍历方式不同，强行使用对方的遍历方式也可以，但不管是时空复杂度还是代码复杂度都高得多。
+  - **深度从上到下数：层序遍历、前序遍历。**
+  - **高度从下到上数：后序遍历**
+- 求最大深度因为最大深度和最大高度相同，所以都可以使用
 
 ## [226. 翻转二叉树](https://leetcode.cn/problems/invert-binary-tree/)
 
@@ -2022,3 +2065,38 @@ public:
 ## [559. N 叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-n-ary-tree/)
 
 层序遍历一遍完事了。
+
+## [110. 平衡二叉树](https://leetcode.cn/problems/balanced-binary-tree/)
+
+- 需要从下到上计算高度，也就是说需要递归返回来增加高度，因此不能使用层序遍历或者前序遍历（中前后，最后递归无法返回到root），使用后序遍历
+
+- 递归方法：
+
+  ```c++
+  class Solution {
+  public:
+      int GetHeight(TreeNode* node) {
+          if (node== NULL) return 0;  // 到叶子
+          int left_height = GetHeight(node->left);
+          int right_height = GetHeight(node->right);
+          if (left_height == -1 || right_height == -1) return -1;  // 用-1标记非平衡树
+          int delta = abs(left_height - right_height);
+          if (delta > 1) return -1;
+          return max(left_height, right_height) + 1;
+      }
+  
+      bool isBalanced(TreeNode* root) {
+          if (root == NULL) return true;
+          if (GetHeight(root) == -1) return false;
+          return true;
+      }
+  };
+  ```
+
+- 此题用迭代法，其实效率很低，因为没有很好的模拟回溯的过程，所以迭代法有很多重复的计算。
+
+  虽然理论上所有的递归都可以用迭代来实现，但是有的场景难度可能比较大。
+
+  例如：都知道回溯法其实就是递归，但是很少人用迭代的方式去实现回溯算法！
+
+  因为对于回溯算法已经是非常复杂的递归了，如果再用迭代的话，就是自己给自己找麻烦，效率也并不一定高。
