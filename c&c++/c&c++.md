@@ -1468,6 +1468,40 @@ int main(int argc, char *argv[])
 }
 ```
 
+## to_string整数转string
+
+```c++、
+string to_string(numberic_value);
+```
+
+- string是返回类型，即函数返回一个字符串对象，其中包含字符串格式的数字值。
+- numbric_value是可以为整数，浮点数，长整数，双精度数的数字。
+
+```c++
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main ()
+{
+	//定义不同类型的数据类型
+	int intVal =12345;
+	float floatVal = 123.45f;
+	long longVal = 123456789;
+
+	//将值转换为字符串以打印
+	cout<<"intVal (string format) : "<<to_string (intVal) <<endl;
+	cout<<"floatVal (string format) : "<<to_string (floatVal) <<endl;
+	cout<<"floatVal (string format) : "<<to_string (longVal) <<endl;
+
+	return 0;
+}
+// 输出结果
+    intVal (string format) : 12345
+    floatVal (string format) : 123.449997
+    floatVal (string format) : 123456789
+```
+
 
 
 # vector
