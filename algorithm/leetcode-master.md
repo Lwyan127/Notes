@@ -2100,3 +2100,124 @@ public:
   例如：都知道回溯法其实就是递归，但是很少人用迭代的方式去实现回溯算法！
 
   因为对于回溯算法已经是非常复杂的递归了，如果再用迭代的话，就是自己给自己找麻烦，效率也并不一定高。
+
+## [257. 二叉树的所有路径](https://leetcode.cn/problems/binary-tree-paths/)
+
+我的代码：没有使用回溯，使用一个全局变量来存储答案。其实原本时使用最下面那个精简版本的，但是在写的时候犯了个大错误：在左右子节点处理时没有返回ans，也就是相当于没有回溯，把答案传回来。最后还是用全局变量舒服点。
+
+```c++
+class Solution {
+public:
+    void FindPaths(TreeNode* node, string s, TreeNode* root) {
+        if (node != root) {  // 不要处理root，因为进入递归前s已经加过root了
+            s += "->";
+            s += to_string(node->val);
+        }
+        if (node->left == NULL && node->right == NULL) {
+            ans.push_back(s);
+            return;
+        }
+        if (node->left) FindPaths(node->left, s, root);
+        if (node->right) FindPaths(node->right, s, root);
+        return;
+    }
+    
+    /* 我的初始版本，是正确的
+    vector<string> FindPaths(TreeNode* node, vector<string> ans, string s, TreeNode* root) {
+        if (node != root) {
+            s += "->";
+            s += to_string(node->val);
+        }
+        if (node->left == NULL && node->right == NULL) {
+            ans.push_back(s);
+            return ans;
+        }
+        if (node->left) ans = FindPaths(node->left, ans, s, root);  // 刚开始这里没有返回ans，所以没对
+        if (node->right) ans = FindPaths(node->right, ans, s, root);
+        return ans;
+    }
+    */
+    
+
+    vector<string> binaryTreePaths(TreeNode* root) {
+        if (root == NULL) return ans;
+        string s = to_string(root->val);
+        FindPaths(root, s, root);
+        return ans;
+    }
+
+private:
+    vector<string> ans;
+};
+```
+
+使用回溯的办法：
+
+**回溯要和递归永远在一起!**
+
+```c++
+// 版本一
+class Solution {
+private:
+    void traversal(TreeNode* cur, vector<int>& path, vector<string>& result) {
+        path.push_back(cur->val); // 中，中为什么写在这里，因为最后一个节点也要加入到path中 
+        // 这才到了叶子节点
+        if (cur->left == NULL && cur->right == NULL) {
+            string sPath;
+            for (int i = 0; i < path.size() - 1; i++) {
+                sPath += to_string(path[i]);
+                sPath += "->";
+            }
+            sPath += to_string(path[path.size() - 1]);
+            result.push_back(sPath);
+            return;
+        }
+        if (cur->left) { // 左 
+            traversal(cur->left, path, result);  // 回溯要和递归永远在一起
+            path.pop_back(); // 回溯
+        }
+        if (cur->right) { // 右
+            traversal(cur->right, path, result);
+            path.pop_back(); // 回溯
+        }
+    }
+
+public:
+    vector<string> binaryTreePaths(TreeNode* root) {
+        vector<string> result;
+        vector<int> path;
+        if (root == NULL) return result;
+        traversal(root, path, result);
+        return result;
+    }
+};
+```
+
+精简后将回溯变成在参数中的字符串相加，这样可以不用回溯：
+
+```c++
+class Solution {
+private:
+
+    void traversal(TreeNode* cur, string path, vector<string>& result) {
+        path += to_string(cur->val); // 中
+        if (cur->left == NULL && cur->right == NULL) {
+            result.push_back(path);
+            return;
+        }
+        if (cur->left) traversal(cur->left, path + "->", result); // 左，这里字符串相加就不用回溯了
+        if (cur->right) traversal(cur->right, path + "->", result); // 右
+    }
+
+public:
+    vector<string> binaryTreePaths(TreeNode* root) {
+        vector<string> result;
+        string path;
+        if (root == NULL) return result;
+        traversal(root, path, result);
+        return result;
+
+    }
+};
+```
+
