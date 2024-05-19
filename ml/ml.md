@@ -119,7 +119,7 @@ b站：https://www.bilibili.com/video/BV1Pa411X76s
   - 从小到大增加倍数来测试学习率，选择比合理的学习率略小的值
   - 0.001 -> 0.003 -> 0.01 -> 0.03 -> 0.1 -> 0.3
 
-## 多维特征，向量化（vectorization）  
+## 多维特征，向量化
 
 ```python
 import numpy as np
@@ -177,7 +177,7 @@ f = np.dot(w, x) + b
 - ![image-20240319234749403](ml.assets/image-20240319234749403.png)
 - ![image-20240319234803288](ml.assets/image-20240319234803288.png)
 
-## 特征工程（feature engineering）
+## 特征工程
 
 - 使用原始的特征通过运算来设计新特征，使算法更容易做出准确的预测
 - 例如
@@ -432,3 +432,60 @@ model.predict(x_new)
 如下图，左边是二元分类，判断预测值y为0或1即可。右边为多分类问题，需要判断y值为1/2/3/4。
 
 ![image-20240516235655093](ml.assets/image-20240516235655093.png)
+
+## softmax regression
+
+- 如下为softmax regression，与逻辑回归模型有些类似
+
+![image-20240519104917626](ml.assets/image-20240519104917626.png)
+
+- 则其**损失函数**：（这里的y是数据集的值，也就是让$a_1$预测值靠近y）
+
+![image-20240519105819834](ml.assets/image-20240519105819834.png)
+
+- 如下为在模型中的使用
+
+![image-20240519112138805](ml.assets/image-20240519112138805.png)
+
+### 减少数据误差
+
+例如 $x = 2 / 10000$ 和 $x = (1+1 / 10000)-(1-1/10000)$ 实际浮点数的值在计算机中会不一样，第一个精度更高更准确。
+
+因此在损失函数中加上一句 $from\_logits =True$，这一句中logits相当于z的值，其意思是直接将z放入激活函数中，然后再计算，这样准确度更高
+
+```py
+model.compile(
+    loss = tf.keras.losses.BinaryCrossentropy(from_logits =True)
+)
+```
+
+## 多标签分类（multi-label classification）
+
+![image-20240519123216295](ml.assets/image-20240519123216295.png)
+
+除了训练三个神经网络，还可以就训练一个神经网路但是输出的向量中有多维
+
+## Adam算法
+
+- 自动更改学习率，让梯度下降更准确。例如：如果下降得慢，它会增大学习率；如果损失函数在振荡，则它会减少学习率。
+- 对于每个参数都是用不同的学习率
+
+```
+model.compile(
+    loss = tf.keras.losses.BinaryCrossentropy(from_logits =True),
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.01),
+)
+```
+
+## 卷积神经网络（CNN）
+
+- 相比于前面说的，每一层的每一个神经元都接受了前一层所有的激活值。卷积层（convolutional layer）只接受一部分激活值，例如在手写识别中，每一个神经元只接受一块区域的像素值。
+- 其优点：
+  - 更快的计算
+  - 使用更少的数据，不容易过拟合  
+
+ **Convolutional Neural Network：**
+
+例如从心电图判断心脏疾病，每一个神经元只输入心电图或者前一层的一小部分，然后最后一层放一个sigmoid函数来做二元分类
+
+![image-20240519124959369](ml.assets/image-20240519124959369.png)
