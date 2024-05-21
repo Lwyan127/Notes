@@ -2221,3 +2221,27 @@ public:
 };
 ```
 
+## [404. 左叶子之和](https://leetcode.cn/problems/sum-of-left-leaves/)
+
+使用层序遍历的话判断一下是否是叶子
+
+使用后序遍历的话，前后中
+
+```c++
+class Solution {
+public:
+    int sumOfLeftLeaves(TreeNode* root) {
+        if (root == NULL) return 0;
+        int leftValue = 0;
+        if (root->left != NULL && root->left->left == NULL && root->left->right == NULL) {
+            leftValue = root->left->val;
+        }
+        return leftValue + sumOfLeftLeaves(root->left) + sumOfLeftLeaves(root->right);
+        // 前，后，中（加起来返回就是中）
+    }
+};
+```
+
+## [513. 找树左下角的值](https://leetcode.cn/problems/find-bottom-left-tree-value/)
+
+层序遍历，在每一层取一下首个节点，最后得到最后一层的首个节点，返回值即可。
