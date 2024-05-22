@@ -1912,7 +1912,7 @@ public:
 };
 ```
 
-[107. 二叉树的层序遍历 II](https://leetcode.cn/problems/binary-tree-level-order-traversal-ii/)
+## [107. 二叉树的层序遍历 II](https://leetcode.cn/problems/binary-tree-level-order-traversal-ii/)
 
 将每一层放入ans时放到最前
 
@@ -1922,15 +1922,15 @@ ans.insert(ans.begin(), level);
 
 不过这样时间复杂度比较高为O(n)，要么就用上面的递归，用depth，直接可以ans[depth].push_back，这样插入的复杂度为O(1)
 
-[199. 二叉树的右视图](https://leetcode.cn/problems/binary-tree-right-side-view/)
+## [199. 二叉树的右视图](https://leetcode.cn/problems/binary-tree-right-side-view/)
 
 用我的代码改一下，endoflevel就是所有的答案，放入ans中即可。
 
-[637. 二叉树的层平均值](https://leetcode.cn/problems/average-of-levels-in-binary-tree/)
+## [637. 二叉树的层平均值](https://leetcode.cn/problems/average-of-levels-in-binary-tree/)
 
 在每层求和，在这层结束时求平均值放入ans
 
-[429. N 叉树的层序遍历](https://leetcode.cn/problems/n-ary-tree-level-order-traversal/)
+## [429. N 叉树的层序遍历](https://leetcode.cn/problems/n-ary-tree-level-order-traversal/)
 
 每个节点将其子节压入队列：
 
@@ -1940,13 +1940,13 @@ for (auto child: node->children) {
 }
 ```
 
-[515. 在每个树行中找最大值](https://leetcode.cn/problems/find-largest-value-in-each-tree-row/)
+## [515. 在每个树行中找最大值](https://leetcode.cn/problems/find-largest-value-in-each-tree-row/)
 
 立个flag找最大值即可
 
-[116. 填充每个节点的下一个右侧节点指针](https://leetcode.cn/problems/populating-next-right-pointers-in-each-node/)
+## [116. 填充每个节点的下一个右侧节点指针](https://leetcode.cn/problems/populating-next-right-pointers-in-each-node/)
 
-[117. 填充每个节点的下一个右侧节点指针 II](https://leetcode.cn/problems/populating-next-right-pointers-in-each-node-ii/)
+## [117. 填充每个节点的下一个右侧节点指针 II](https://leetcode.cn/problems/populating-next-right-pointers-in-each-node-ii/)
 
 ```c++
 if (p == endoflevel) {  // 这一层取完了
@@ -1957,7 +1957,7 @@ if (p == endoflevel) {  // 这一层取完了
 }
 ```
 
-[104. 二叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-binary-tree/)
+## [104. 二叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-binary-tree/)
 
 - 层序遍历：设个depth，每结束一层加一
 
@@ -1993,7 +1993,7 @@ if (p == endoflevel) {  // 这一层取完了
   };
   ```
 
-[111. 二叉树的最小深度](https://leetcode.cn/problems/minimum-depth-of-binary-tree/)
+## [111. 二叉树的最小深度](https://leetcode.cn/problems/minimum-depth-of-binary-tree/)
 
 ```c++
 // 这里判断是depth还是上一层的层数，因此要加1
@@ -2245,3 +2245,49 @@ public:
 ## [513. 找树左下角的值](https://leetcode.cn/problems/find-bottom-left-tree-value/)
 
 层序遍历，在每一层取一下首个节点，最后得到最后一层的首个节点，返回值即可。
+
+## [112. 路径总和](https://leetcode.cn/problems/path-sum/)
+
+前中后序遍历都可以，后序遍历的话，到叶子节点就判断sum然后返回true或者falsel，用子节点的flag值或一下返回。
+
+## [106. 从中序与后序遍历序列构造二叉树](https://leetcode.cn/problems/construct-binary-tree-from-inorder-and-postorder-traversal/)
+
+例如：inorder = [9,3,15,20,7], postorder = [9,15,7,20,3]，构造时如下：
+
+![image-20240522155324972](leetcode-master.assets/image-20240522155324972.png)
+
+每次将中序遍历数组和后序遍历数组都切三段即可，中序遍历的中间和后序遍历的最后一个为相同的中间节点，以此来划分中序遍历的三段，后序遍历的三段根据中序遍历的三段的长度来划分。
+
+如图的一层层切割，则使用递归。三段我这里全部考虑为闭区间。
+
+```c++
+class Solution {
+public:
+    TreeNode* CutTree(vector<int>& in, int inl, int inr, vector<int>& post, int postl, int postr) {
+        if (inl > inr || postl > postr) return NULL;  // 这一段为空，说明不存在子节点
+        if (inl == inr && postl == postr) {  // 这一段只有一个节点，不用划分
+            TreeNode* node = new TreeNode(in[inl]);
+            return node;
+        }
+        int m;
+        TreeNode* midnode;
+        for (int i = inl; i <= inr; i++) {  // 寻诈中间节点
+            if (in[i] == post[postr]) {
+                m = i;
+                midnode = new TreeNode(in[i]);
+                break;
+            }
+        }
+        // 如下三段划分已经放在里面了，要根据闭区间仔细划分
+        midnode->left = CutTree(in, inl, m - 1, post, postl, postl + m - inl - 1);
+        midnode->right = CutTree(in, m + 1, inr, post, postl + m - inl, postr - 1);
+        return midnode;  // 回溯
+    }
+
+    TreeNode* buildTree(vector<int>& inorder, vector<int>& postorder) {
+        if (inorder.size() == 0 || postorder.size() == 0) return NULL;  // 空树
+        return CutTree(inorder, 0, inorder.size() - 1, postorder, 0, postorder.size() - 1);
+    }
+};
+```
+
