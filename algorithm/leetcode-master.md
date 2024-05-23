@@ -2271,7 +2271,7 @@ public:
         }
         int m;
         TreeNode* midnode;
-        for (int i = inl; i <= inr; i++) {  // 寻诈中间节点
+        for (int i = inl; i <= inr; i++) {  // 寻找中间节点
             if (in[i] == post[postr]) {
                 m = i;
                 midnode = new TreeNode(in[i]);
@@ -2291,3 +2291,27 @@ public:
 };
 ```
 
+## [105. 从前序与中序遍历序列构造二叉树](https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/)
+
+和上面一道一样，划分有些修改
+
+```
+if (in[i] == pre[prel]) {  // prel才是每一段的中间节点，不是0
+    m = i;
+    midnode = new TreeNode(in[i]);
+    break;
+}
+
+midnode->left = CutTree(in, inl, m - 1, pre, prel + 1, prel + m - inl);
+midnode->right = CutTree(in, m + 1, inr, pre, prel + m - inl + 1, prer);
+```
+
+由上可知：
+
+**前序和中序**、**后序和中序**都可以唯一确定一棵树，但是**前序和后序不行**，如下图示，没有中序遍历无法确定左右部分，也就是无法分割。
+
+**![image-20240523230657355](leetcode-master.assets/image-20240523230657355.png)**
+
+## [654. 最大二叉树](https://leetcode.cn/problems/maximum-binary-tree/)
+
+ 相当于后序遍历一下，递归就好了。
