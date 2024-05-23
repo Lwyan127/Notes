@@ -2167,8 +2167,8 @@ https://blog.csdn.net/qq_40286920/article/details/124731777
 
 # map
 
-- map是STL的一个关联容器，以**键值对**存储的数据，其类型可以自己定义，每个关键字在map中只能出现一次，**关键字不能修改**，值可以修改
-- map同set、multiset、multimap（与map的差别仅在于multimap允许一个键对应多个值）内部数据结构都是红黑树，而java中的hashmap是以hash table实现的
+- map是STL的一个关联容器，以**键值对**存储的数据，其类型可以自己定义，每个**关键字不可重复**，**关键字不能修改**，值可以修改
+- map同set、multiset、multimap（与map的差别仅在于multimap允许一个键对应多个值，multimap中key可以重复）内部数据结构都是**红黑树**，而java中的hashmap是以hash table实现的
 - 所以map**内部有序**（**自动排序**，自动按key升序排序（从小到大）的，单词时按照字母序排序）
 - 查找时间复杂度为**O(logn)**。
 - 增删时间复杂度为**O(logn)**。
@@ -2178,8 +2178,19 @@ https://blog.csdn.net/qq_40286920/article/details/124731777
   - 整数默认为0
 
 
-```
+```c++
 #include<map>
+```
+
+## unordered_map
+
+- **哈希表**实现，因此查询效率和删改效率为**O(n)**
+- **内部无序**
+- **关键字不可重复，不可修改**
+- 使用函数类似于map
+
+```
+#include <unordered_map>
 ```
 
 ## 定义
