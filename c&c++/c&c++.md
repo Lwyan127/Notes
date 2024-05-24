@@ -2816,3 +2816,7 @@ int main() {
 > 2 3
 > 1 3
 > 1 2
+
+# 关于auto使用
+
+https://www.cnblogs.com/KunLunSu/p/7861330.html
