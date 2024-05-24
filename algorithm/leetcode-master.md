@@ -2315,3 +2315,61 @@ midnode->right = CutTree(in, m + 1, inr, pre, prel + m - inl + 1, prer);
 ## [654. 最大二叉树](https://leetcode.cn/problems/maximum-binary-tree/)
 
  相当于后序遍历一下，递归就好了。
+
+## [617. 合并二叉树](https://leetcode.cn/problems/merge-two-binary-trees/)
+
+合并的时候判断一下是否为NULL，比如root1为NULL了，就返回root2好了，然后都不为NULL的话就直接后序遍历，返回该节点。
+
+## [700. 二叉搜索树中的搜索](https://leetcode.cn/problems/search-in-a-binary-search-tree/)
+
+搜索一下就好了。
+
+## [98. 验证二叉搜索树](https://leetcode.cn/problems/validate-binary-search-tree/)
+
+**方法1：**
+
+将树中序遍历变成数组，然后判断是否有序，注意，二叉搜索树不能有重复的数字
+
+**方法2：**
+
+递归判断。如下，递归时候带个范围，由于测评中存在INT_MIN和INT_MAX，所以我这里使用long
+
+```c++
+class Solution {
+public:
+    bool JudgeBST(TreeNode* node, long minval, long maxval) {
+        if (node == NULL) return true;
+        if (node->left && (node->val <= node->left->val || node->left->val <= minval)) 
+            return false;
+        if (node->right && (node->val >= node->right->val || node->right->val >= maxval)) 
+            return false;
+        return JudgeBST(node->left, minval, node->val) && JudgeBST(node->right, node->val, maxval);
+    }
+
+    bool isValidBST(TreeNode* root) {
+        return JudgeBST(root, LONG_MIN, LONG_MAX);
+    }
+};
+```
+
+但是万一测评中有LLONG_MIN，那我这个范围就没法取了，因此如下使用一个pre来记录前一个节点，这里只用来比较最小值了。
+
+这个pre的作用是首先会取到最左边节点的数值，为树的最小值。然后左中右，应该是依次变大，pre逐渐更新变大，如果违背了就return false。这样就不用关心范围，只用一个最小值即可，而且还不担心有LLOND_MIN。
+
+```c++
+class Solution {
+public:
+    TreeNode* pre = NULL; // 用来记录前一个节点
+    bool isValidBST(TreeNode* root) {
+        if (root == NULL) return true;
+        bool left = isValidBST(root->left);
+
+        if (pre != NULL && pre->val >= root->val) return false;
+        pre = root; // 记录前一个节点
+
+        bool right = isValidBST(root->right);
+        return left && right;
+    }
+};
+```
+
