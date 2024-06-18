@@ -2373,3 +2373,63 @@ public:
 };
 ```
 
+## [530. 二叉搜索树的最小绝对差](https://leetcode.cn/problems/minimum-absolute-difference-in-bst/)
+
+将二叉搜索树变成数组，再来遍历一遍找最小差
+
+## [501. 二叉搜索树中的众数](https://leetcode.cn/problems/find-mode-in-binary-search-tree/)
+
+**方法1：**将二叉搜索树变成数组，再来遍历一遍
+
+**方法2：**用map记录，然后遍历一遍树，这种方法任意的树都可以
+
+**方法3：**直接处理树，这就需要二叉搜索树
+
+- 使用pre节点来判断是否和前一个节点相同，不同则充值cnt
+- 使用cnt来记录多少数，如果cnt>max_cnt，就清空result，把这个val放进去
+- 可能存在多个众数，那cnt==max_cnt的话，就也放进result中
+
+```c++
+class Solution {
+public:
+    vector<int> findMode(TreeNode* root) {
+        cnt = 0;
+        max_cnt = INT_MIN;
+        pre = NULL;
+        result.clear();
+        inorder(root);
+        return result;
+    }
+
+private:
+    vector<int> result;
+    int cnt, max_cnt;
+    TreeNode* pre;
+
+    void inorder(TreeNode* node) {
+        if (node == NULL) return;
+        inorder(node->left);  // 前
+        if (pre == NULL) {  // 中
+            cnt = 1;
+        } else if (pre->val == node->val) {
+            cnt++;
+        } else if (pre->val != node->val) {
+            cnt = 1;
+        }
+        pre = node;  // 更新节点
+        
+        // 判断相同val当前的个数是否大于当前众数的个数
+        if (cnt == max_cnt) {
+            result.push_back(pre->val);
+        } else if (cnt > max_cnt) {
+            max_cnt = cnt;
+            result.clear();
+            result.push_back(pre->val);
+        }
+
+        inorder(node->right);  // 后
+        return ;
+    }
+};
+```
+
