@@ -2433,3 +2433,14 @@ private:
 };
 ```
 
+## [236. 二叉树的最近公共祖先](https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-tree/)
+
+使用后序遍历，先处理两个子节点，最后再处理父节点，因此可以回溯。
+
+如果找到了p或者q，则返回这个p/q节点。如果两个子节点分别是p和q，则这个父节点就是我们要找的节点。
+
+## [235. 二叉搜索树的最近公共祖先](https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-search-tree/)
+
+利用搜索树，任意遍历方法，从上到下找到第一个在[p,q]内的节点即为最近公共祖先
+
+![image-20240629234315407](leetcode-master.assets/image-20240629234315407.png)
