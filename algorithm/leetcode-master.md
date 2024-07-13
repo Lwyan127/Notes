@@ -2508,3 +2508,18 @@ public:
 };
 ```
 
+## [669. 修剪二叉搜索树](https://leetcode.cn/problems/trim-a-binary-search-tree/)
+
+递归，然后每次返回处理的节点，考虑清楚即可。
+
+## [108. 将有序数组转换为二叉搜索树](https://leetcode.cn/problems/convert-sorted-array-to-binary-search-tree/)
+
+二分这个数组就是一个平衡搜索树。
+
+## [538. 把二叉搜索树转换为累加树](https://leetcode.cn/problems/convert-bst-to-greater-tree/)
+
+设置一个累加用的sum，然后按照后中前的顺序遍历即可。
+
+## 总结
+
+![image-20240713195159133](leetcode-master.assets/image-20240713195159133.png)
