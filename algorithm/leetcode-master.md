@@ -2523,3 +2523,82 @@ public:
 ## 总结
 
 ![image-20240713195159133](leetcode-master.assets/image-20240713195159133.png)
+
+# 回溯
+
+- 回溯函数也就是**递归**函数
+- 回溯的本质是**穷举**，穷举所有可能，撑死了再剪枝一下，然后选出我们想要的答案，因此回溯法**并不是什么高效的算法**
+
+- 回溯法，一般可以解决如下几种问题：
+
+  - 组合问题：N个数里面按一定规则找出k个数的集合
+
+  - 切割问题：一个字符串按一定规则有几种切割方式
+
+  - 子集问题：一个N个数的集合里有多少符合条件的子集
+
+  - 排列问题：N个数按一定规则全排列，有几种排列方式
+
+  - 棋盘问题：N皇后，解数独等等
+
+```c++
+void backtracking(参数) {
+    if (终止条件) {
+        存放结果;
+        return;
+    }
+
+    for (选择：本层集合中元素（树中节点孩子的数量就是集合的大小）) {
+        处理节点;
+        backtracking(路径，选择列表); // 递归
+        回溯，撤销处理结果
+    }
+}
+```
+
+## [77. 组合](https://leetcode.cn/problems/combinations/)
+
+![image-20240715130825024](leetcode-master.assets/image-20240715130825024.png)
+
+- 这里使用一个全局变量path，中间用**回溯**来撤销掉处理的节点
+- 然后不剪枝，因此会有上图右边取4的空，但是不要紧能输出答案即可。
+
+```c++
+class Solution {
+private:
+    vector<vector<int>> result; // 存放符合条件结果的集合
+    vector<int> path; // 用来存放符合条件结果
+    void backtracking(int n, int k, int startIndex) {
+        if (path.size() == k) {
+            result.push_back(path);
+            return;
+        }
+        for (int i = startIndex; i <= n; i++) {
+            path.push_back(i); // 处理节点
+            backtracking(n, k, i + 1); // 递归
+            path.pop_back(); // 回溯，撤销处理的节点
+        }
+    }
+public:
+    vector<vector<int>> combine(int n, int k) {
+        result.clear(); // 可以不写
+        path.clear();   // 可以不写
+        backtracking(n, k, 1);
+        return result;
+    }
+};
+```
+
+- 可以剪枝
+
+```c++
+for (int i = startIndex; i <= n - (k - path.size()) + 1; i++) { // 优化的地方
+    path.push_back(i); // 处理节点
+    backtracking(n, k, i + 1);
+    path.pop_back(); // 回溯，撤销处理的节点
+}
+```
+
+## [216. 组合总和 III](https://leetcode.cn/problems/combination-sum-iii/)
+
+和上题类似。
