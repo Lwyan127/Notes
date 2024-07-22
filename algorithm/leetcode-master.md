@@ -2602,3 +2602,69 @@ for (int i = startIndex; i <= n - (k - path.size()) + 1; i++) { // 优化的地�
 ## [216. 组合总和 III](https://leetcode.cn/problems/combination-sum-iii/)
 
 和上题类似。
+
+## [17. 电话号码的字母组合](https://leetcode.cn/problems/letter-combinations-of-a-phone-number/)
+
+和前两题思路一样
+
+这里将字符串中的数字变为int型：
+
+```c++
+int num = digits[depth] - '0' - 2;
+```
+
+## [39. 组合总和](https://leetcode.cn/problems/combination-sum/)
+
+还是回溯的思路。
+
+这里要注意设置一个startidx在candidates中，从startidx开始循环，这样能防止[2,2,3]和[2,3,2]这样的重复。
+
+## [40. 组合总和 II](https://leetcode.cn/problems/combination-sum-ii/)
+
+如果按照上一题的思路继续做，会发现存在重复，举一个例子，candidates = [1, 1, 2], target = 3，（方便起见candidates已经排序了）。答案是{[1, 2]}，但是在递归中，第一个1会与2求和一次，第二个1也会和2求和一次，这样答案就变成了{[1, 2]，[1, 2]}，是错的。因此，在递归中，在同一层相同两个重复元素不可以重复选取。
+
+![image-20240723000700271](leetcode-master.assets/image-20240723000700271.png)
+
+因此在循环中加一句
+
+```c++
+if (i > startidx && candidates[i] == candidates[i - 1]) continue;
+```
+
+全部代码
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> ans;
+    vector<int> tmp;
+    int sum = 0;
+
+    void Combine(vector<int> &candidates, int target, int startidx) {
+        if (sum == target) {
+            ans.push_back(tmp);
+            return;
+        } else if (sum > target) {
+            return;
+        }
+        for (int i = startidx; i < candidates.size(); i++) {
+            if (i > startidx && candidates[i] == candidates[i - 1]) continue;  // 去重
+            tmp.push_back(candidates[i]);
+            sum += candidates[i];
+            Combine(candidates, target, i + 1);
+            tmp.pop_back();  // 回退
+            sum -= candidates[i];
+        }
+        return;
+    }
+
+    vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
+        ans.clear();
+        tmp.clear();
+        sort(candidates.begin(), candidates.end());
+        Combine(candidates, target, 0);
+        return ans;
+    }
+};
+```
+
