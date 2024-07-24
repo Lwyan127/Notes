@@ -2668,3 +2668,95 @@ public:
 };
 ```
 
+## [131. 分割回文串](https://leetcode.cn/problems/palindrome-partitioning/)
+
+![image-20240724235730788](leetcode-master.assets/image-20240724235730788.png)
+
+```c++
+class Solution {
+public:
+    vector<vector<string>> ans;
+    vector<string> target;
+
+    bool Judge(string s) {
+        for (int i = 0; i < s.size() / 2; i++) {
+            if (s[i] != s[s.size() - 1 - i]) return false;
+        }
+        return true;
+    }
+
+    void Cut(string s, int startidx) {
+        if (startidx >= s.size()) {
+            ans.push_back(target);
+            return;
+        }
+
+        string tmp;
+        for (int i = startidx; i < s.size(); i++) {  // 重点：切割的部分
+            tmp += s[i];
+            if (Judge(tmp)) {
+                target.push_back(tmp);
+                Cut(s, i + 1);
+                target.pop_back();  // 每次回溯一个就好了，因为进入下一个递归返回时都会回溯
+            }
+        }
+        return;
+    }
+
+    vector<vector<string>> partition(string s) {
+        ans.clear();
+        target.clear();
+        Cut(s, 0);
+        return ans;
+    }
+};
+```
+
+## [93. 复原 IP 地址](https://leetcode.cn/problems/restore-ip-addresses/)
+
+ 和上一题其实类似，但是复杂了一点，需要考虑什么时候删除或添加“.”，因此需要思考代码中的一些细节，我的代码
+
+```c++
+class Solution {
+public:
+    vector<string> ans;
+    string target;
+
+    bool Judge(string s) {  // 判断是否为正确的ip地址的一节
+        if (s[0] == '0' && s.size() > 1) return false;
+        int tmp = stoi(s);
+        if (tmp >= 0 && tmp <= 255) return true;
+        return false; 
+    }
+
+    void CutIP(string s, int startidx, int depth) {
+
+        if (depth == 4) {  // ip地址最后一节
+            if (startidx >= s.size()) {
+                target.pop_back();
+                ans.push_back(target);
+                target += '.';  // 这个增加是为了返回后回溯删除时能正确删除，不加的话显然会多删，然后overflow
+            }
+            return;
+        }
+
+        string tmp;
+        for (int i = startidx; i < startidx + 3 && i < s.size(); i++) {
+            tmp += s[i];
+            if (Judge(tmp)) {
+                target += tmp;
+                target += ".";
+                CutIP(s, i + 1, depth + 1);
+                for (int j = 0; j < tmp.size() + 1; j++) target.pop_back();  // 删除点
+            }
+        }
+        return;
+    }
+
+    vector<string> restoreIpAddresses(string s) {
+        ans.clear();
+        CutIP(s, 0, 0);
+        return ans;
+    }
+};
+```
