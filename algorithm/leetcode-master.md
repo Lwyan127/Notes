@@ -2760,3 +2760,78 @@ public:
     }
 };
 ```
+
+## [78. 子集](https://leetcode.cn/problems/subsets/)
+
+这个遍历需要对递归树上的每一个节点都收入ans中
+
+![image-20240725234301688](leetcode-master.assets/image-20240725234301688.png)
+
+```c++
+class Solution {
+private:
+    vector<vector<int>> result;
+    vector<int> path;
+    void backtracking(vector<int>& nums, int startIndex) {
+        result.push_back(path); // 收集子集，要放在终止添加的上面，否则会漏掉自己
+        if (startIndex >= nums.size()) {
+            return;
+        }
+        for (int i = startIndex; i < nums.size(); i++) {
+            path.push_back(nums[i]);
+            backtracking(nums, i + 1);
+            path.pop_back();
+        }
+    }
+public:
+    vector<vector<int>> subsets(vector<int>& nums) {
+        result.clear();
+        path.clear();
+        backtracking(nums, 0);
+        return result;
+    }
+};
+```
+
+## [90. 子集 II](https://leetcode.cn/problems/subsets-ii/)
+
+去重：先排序，然后判断前后两个数是否一样来去重。
+
+```c++
+sort(nums.begin(), nums.end());  // 排序
+
+if (i > startidx && nums[i - 1] == nums[i]) continue;  // 去重
+```
+
+## [491. 非递减子序列](https://leetcode.cn/problems/non-decreasing-subsequences/)
+
+这里也需要去重，但是问题是没有先排序，所以不能判断前后两个数是否一样来去重，这里应该是同一层中不能取相同的数，如下：
+
+![image-20240802152451101](leetcode-master.assets/image-20240802152451101.png)
+
+因此每一层中使用unordered_map作为哈希表判断是否取过。
+
+```c++
+unordered_map<int, int> map;
+for (int i = startidx; i < nums.size(); i++) {
+    if (path.empty() || path.back() <= nums[i]) {
+        if (map.count(nums[i])) continue;
+        path.push_back(nums[i]);
+        map[nums[i]] = 1;
+        if (path.size() >= 2) ans.push_back(path);
+        Find(nums, i + 1);
+        path.pop_back();
+    }
+}
+```
+
+## [46. 全排列](https://leetcode.cn/problems/permutations/)
+
+因为没有重复的数字，因此使用map记录已经使用的数，然后进入下一层递归，回来的时候再清掉map的记录。
+
+## [47. 全排列 II](https://leetcode.cn/problems/permutations-ii/)
+
+使用两个map：
+
+- 一个map和上面一样进入下一层递归，回来再清掉map的记录，由于存在重复的数字，因此记录在nums中的位置而非数值
+- 另一个map仅使用在同一层的循环中，用于不要重复选取数字，例如{1, 1, 2}中第一层中选一次1和一次2就行了，第二个1不能选。记录的是数值。
