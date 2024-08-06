@@ -2835,3 +2835,93 @@ for (int i = startidx; i < nums.size(); i++) {
 
 - 一个map和上面一样进入下一层递归，回来再清掉map的记录，由于存在重复的数字，因此记录在nums中的位置而非数值
 - 另一个map仅使用在同一层的循环中，用于不要重复选取数字，例如{1, 1, 2}中第一层中选一次1和一次2就行了，第二个1不能选。记录的是数值。
+
+## [332. 重新安排行程](https://leetcode.cn/problems/reconstruct-itinerary/)
+
+这道题就是搜索，类似上面的回溯直接深搜，但是超时了。
+
+超时的问题在于
+
+1. 他需要字典排序最小的路径，而直接深搜需要所有路径都走一遍找到最小的，实际上需要**先排序再搜索**，找到了直接返回就是字典排序最小的了。先排序的话，在答案中有个好办法，直接**使用map自动排序**。
+2. 每一层中需要循环每一个ticket来找下一条路径，这里可以**使用unordered_map先存储路径**，这样就不用找所有ticket了，只需要循环在同一个出发地出发的map即可，unordered_map是一个哈希表，时间缩短很多。
+
+需要的存储内容：
+
+- 出发地
+- 目的地（想办法使用map自动排序）
+- 机票是否使用
+
+因此，将tickets变为以下结构
+
+```c++
+// unordered_map<出发机场, map<到达机场, 有几张机票>> targets
+unordered_map<string, map<string, int>> targets;
+```
+
+改变的过程：
+
+```c++
+for (const vector<string>& vec : tickets) {
+    targets[vec[0]][vec[1]]++; // 记录映射关系
+}
+// 或
+for (int i = 0; i < tickets.size(); i++) {
+    targets[tickets[i][0]][tickets[i][1]]++;
+}
+```
+
+我的代码：
+
+```c++
+class Solution {
+public:
+    // unordered_map<出发机场, map<到达机场, 航班次数>> targets
+    unordered_map<string, map<string, int>> targets;
+    vector<string> path;
+
+    bool Find(unordered_map<string, map<string, int>>& targets, int ticket_num) {
+        if (path.size() >= ticket_num + 1) {
+            return true;
+        }
+        
+        string from = path.back();
+        map<string, int>::iterator it;
+        for (it = targets[from].begin(); it != targets[from].end(); it++) {
+            if (it->second>0) {
+                path.push_back(it->first);
+                it->second--;
+                if (Find(targets, ticket_num)) return true;
+                path.pop_back();
+                it->second++;
+            }
+        }
+        return false;
+    }
+
+    vector<string> findItinerary(vector<vector<string>>& tickets) {
+        path.clear();
+        path.push_back("JFK");
+        for (int i = 0; i < tickets.size(); i++) {
+            targets[tickets[i][0]][tickets[i][1]]++;
+        }
+        Find(targets, tickets.size());
+        return path;
+    }
+};
+```
+
+标答中在Find中的那个循环
+
+```c++
+for (pair<const string, int>& target : targets[result[result.size() - 1]]) {
+    if (target.second > 0 ) { // 记录到达机场是否飞过了
+        result.push_back(target.first);
+        target.second--;
+        if (backtracking(ticketNum, result)) return true;
+        result.pop_back();
+        target.second++;
+    }
+}
+```
+
+tips：这里相同出发地和目的地的机票可能有多张，因此需要int来加加和减减
