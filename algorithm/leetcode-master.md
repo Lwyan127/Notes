@@ -521,6 +521,7 @@ return fast;
 - 直白来讲，数组就是一张哈希表：哈希表中关键码就是数组的索引下标，然后通过下标直接访问数组中的元素
 
 - **一般哈希表都是用来快速判断一个元素是否出现集合里**
+  
   - 要枚举的话时间复杂度是O(n)，但如果使用哈希表的话， 只需要O(1)就可以做到
   
 - **哈希函数**
@@ -2556,6 +2557,23 @@ void backtracking(参数) {
 }
 ```
 
+**可能没有终止的那个if，将函数返回值变成bool，当进入最后一次递归时，for循环都进入不了（for里可能有if之类的），然后最后多写一个return true，代表全部遍历完了**
+
+```c++
+bool backtracking(参数) {
+    for (选择：本层集合中元素（树中节点孩子的数量就是集合的大小）) {
+    	if (节点怎么样) {
+            处理节点;
+            if (backtracking(路径，选择列表)) return true; // 递归
+            回溯，撤销处理结果
+        }
+    }
+    return true;  // 代表遍历完了
+}
+```
+
+
+
 ## [77. 组合](https://leetcode.cn/problems/combinations/)
 
 ![image-20240715130825024](leetcode-master.assets/image-20240715130825024.png)
@@ -2925,3 +2943,147 @@ for (pair<const string, int>& target : targets[result[result.size() - 1]]) {
 ```
 
 tips：这里相同出发地和目的地的机票可能有多张，因此需要int来加加和减减
+
+## [51. N 皇后](https://leetcode.cn/problems/n-queens/)
+
+其实很简单就是这个模板，for就是处理每行：
+
+```
+void backtracking(参数) {
+    if (终止条件) {
+        存放结果;
+        return;
+    }
+
+    for (选择：本层集合中元素（树中节点孩子的数量就是集合的大小）) {
+        处理节点;
+        backtracking(路径，选择列表); // 递归
+        回溯，撤销处理结果
+    }
+}
+```
+
+但是注意不要修改棋盘来标志不能放的地方，这样回溯等等有很多问题，正确做法是每次放置时再判断会不会攻击到之前放的棋子。
+
+```c++
+class Solution {
+public:
+    vector<vector<string>> ans;
+
+    bool checkQueens(vector<string> chess, int row, int line, int n) {  // 检查列
+        for (int i = 0; i < n; i++) {
+            if (chess[i][line] == 'Q') return false;
+        }
+        for (int x = row - 1, y = line - 1; x >= 0 && y >= 0; x--, y--) {  // 检查 45度角是否有皇后
+            if (chess[x][y] == 'Q') return false;
+        }
+        for (int x = row - 1, y = line + 1; x >= 0 && y < n; x--, y++) {  // 检查 135度角是否有皇后
+            if (chess[x][y] == 'Q') return false;
+        }
+        return true;
+    }
+
+    void NQueens(vector<string> chess, int row, int n) {
+        if (row == n) {
+            ans.emplace_back(chess);
+            return;
+        }
+        for (int i = 0; i < n; i++) {
+            if (checkQueens(chess, row, i, n)) {
+                chess[row][i] = 'Q';
+                NQueens(chess, row + 1, n);
+                chess[row][i] = '.';  // 回溯
+            }
+        }
+        return;
+    }
+
+    vector<vector<string>> solveNQueens(int n) {
+        vector<string> chess;
+        string str;
+        for (int i = 0; i < n; i++) {
+            str += '.';
+        }
+        for (int i = 0; i < n; i++) {
+            chess.emplace_back(str);
+        }
+        NQueens(chess, 0, n);
+        return ans;
+    }
+};
+```
+
+## [37. 解数独](https://leetcode.cn/problems/sudoku-solver/)
+
+模板是
+
+```c++
+bool backtracking(参数) {
+    for (选择：本层集合中元素（树中节点孩子的数量就是集合的大小）) {
+    	if (节点怎么样) {
+            处理节点;
+            if (backtracking(路径，选择列表)) return true; // 递归
+            回溯，撤销处理结果
+        }
+    }
+    return true;  // 代表遍历完了
+}
+```
+
+```c++
+class Solution {
+private:
+bool backtracking(vector<vector<char>>& board) {
+    for (int i = 0; i < board.size(); i++) {        // 遍历行
+        for (int j = 0; j < board[0].size(); j++) { // 遍历列
+            if (board[i][j] == '.') {
+                for (char k = '1'; k <= '9'; k++) {     // (i, j) 这个位置放k是否合适
+                    if (isValid(i, j, k, board)) {
+                        board[i][j] = k;                // 放置k
+                        if (backtracking(board)) return true; // 如果找到合适一组立刻返回
+                        board[i][j] = '.';              // 回溯，撤销k
+                    }
+                }
+                return false;  // 9个数都试完了，都不行，那么就返回false
+            }
+        }
+    }
+    return true; // 遍历完没有返回false，说明找到了合适棋盘位置了
+}
+bool isValid(int row, int col, char val, vector<vector<char>>& board) {
+    for (int i = 0; i < 9; i++) { // 判断行里是否重复
+        if (board[row][i] == val) {
+            return false;
+        }
+    }
+    for (int j = 0; j < 9; j++) { // 判断列里是否重复
+        if (board[j][col] == val) {
+            return false;
+        }
+    }
+    int startRow = (row / 3) * 3;
+    int startCol = (col / 3) * 3;
+    for (int i = startRow; i < startRow + 3; i++) { // 判断9方格里是否重复
+        for (int j = startCol; j < startCol + 3; j++) {
+            if (board[i][j] == val ) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+public:
+    void solveSudoku(vector<vector<char>>& board) {
+        backtracking(board);
+    }
+};
+
+```
+
+注意一点，检查当前位置能不能放这个数时，函数使用地址传参，因为整个田字格不会变，只是判断一下，所以传地址，相比传数值能节省很多性能，超开很多空间。
+
+# 贪心
+
+遇到题目靠自己手动模拟，如果模拟可行，就可以试一试贪心策略，如果不可行，可能需要动态规划。
+
+**最好用的策略就是举反例，如果想不到反例，那么就试一试贪心吧**。

@@ -253,7 +253,7 @@ a = struct.unpack('i', bytes)[0]
 #test.py
 print('1')
 print('__name__:', __name__)
-if __name__ = '__main__':
+if __name__ == '__main__':
 	print('2')
 ```
 
@@ -276,6 +276,29 @@ __name__:test
 ```
 
 原文链接：https://blog.csdn.net/heqiang525/article/details/89879056
+
+# 函数
+
+```python
+def power(x,n=2):  # n:默认参数，缺省参数
+    return x**n
+a = power(4,3)
+b = power(5,3)
+c = power(6)
+print(a)
+print(b)
+print(c)
+
+# 可变参数
+def total(*args):  # 可变参数
+    print(args)
+    a = 0
+    for i in args:
+        a += i
+    return a
+result = total(1, 2, 3, 4, 5, 6)
+print(result)
+```
 
 
 
@@ -381,7 +404,219 @@ print(s4)
 {'kang', 'zhang', 'd', 'b', 'c', 'a'}
 ```
 
+# list
 
+列表(list)是一个**有序且可更改**的集合。
+
+在Python中，列表中元素的数据类型可以不同，可以包含整数、浮点、字符串等，当然，也可以包含列表、元组、字典和集合等。
+
+在 Python 中，列表是使用方括号 [] 编写的，在列表中使用逗号来将列表中的元素隔断。当[]内没有元素时，该列表为空。
+
+## 索引
+
+与c的数组相同，不过可以反向索引
+
+```python
+list1 = [0, 1, 2, 3, 4, 5]
+print(list1[2])
+# 输出结果为2
+
+list1 = [0, 1, 2, 3, 4, 5]
+# 0       1       2       3       4       5
+# -6     -5      -4      -3      -2      -1
+print(list1[-4])
+# 输出结果为2
+```
+
+## 切片
+
+**左闭右开**
+
+```python
+list1 = [0, 1, 2, 3, 4, 5]
+print(list1[1:4])
+# 输出结果为：[1, 2, 3]
+```
+
+加上步长
+
+```python
+list1 = [0, 1, 2, 3, 4, 5]
+print(list1[0:5:2])
+# 输出结果为[0, 2, 4]
+```
+
+```python
+# 逆向输出列表
+list1 = [0, 1, 2, 3, 4, 5]
+print(list1[5:0:-1])
+# 输出结果为[5, 4, 3, 2, 1] 也是左闭右开
+
+list1 = [0, 1, 2, 3, 4, 5]
+print(list1[-1:-6:-1])
+# 输出结果为[5, 4, 3, 2, 1] 也是左闭右开
+```
+
+## 转换
+
+```python
+list1 = ["a","b","c","d","e"]
+str1 = str(list1)
+print(str1)
+# 输出结果为['a', 'b', 'c', 'd', 'e']
+
+str1 = "abcde"
+list1 = list(str1)
+print(list1)
+# 输出结果为['a', 'b', 'c', 'd', 'e']
+```
+
+## 添加、删除、修改
+
+list.append()：添加单个元素
+
+```python
+list1 = ['a', 'b', 'c', 'd', 'e']
+list1.append('f')
+print(list1)
+# 输出结果为：['a', 'b', 'c', 'd', 'e', 'f']
+```
+
+list.extend()：添加多个元素
+
+```python
+list1 = ['a', 'b', 'c', 'd', 'e']
+list1.extend(['f','h'])
+print(list1)
+# 输出结果为：['a', 'b', 'c', 'd', 'e', 'f', 'h']
+```
+
+list.insert()：指定位置添加元素
+
+```python
+list1 = ['a', 'b', 'c', 'd', 'e']
+list1.insert(0,'h')
+print(list1)
+# 输出结果为：['h', 'a', 'b', 'c', 'd', 'e']
+```
+
+list.pop()：删除最后一个或者指定位置
+
+```python
+list1 = ['a', 'b', 'c', 'd', 'e']
+list1.pop() # 删除“e”
+print(list1)
+# 输出结果为：['a', 'b', 'c', 'd']
+ 
+list1 = ['a', 'b', 'c', 'd', 'e']
+list1.pop(2) # 删除“c”
+print(list1)
+# 输出结果为：['a', 'b', 'd', 'e']
+```
+
+list.remove()：删除指定元素，只会删除一个指定元素，需要循环来删除所有指定元素
+
+```python
+list1 = ['a', 'b', 'e','c', 'd', 'e']
+list1.remove('e') # 删除“e”
+print(list1)
+# 输出结果为：['a', 'b', 'c', 'd', 'e']
+```
+
+list.clear()：清除列表所有元素
+
+修改的话直接用下标找到位置赋值即可
+
+## 其他
+
+| Python 表达式               | 结果                         | 描述                 |
+| --------------------------- | ---------------------------- | -------------------- |
+| len([1, 2, 3])              | 3                            | 计算元素个数         |
+| [1, 2, 3] + [4, 5, 6]       | [1, 2, 3, 4, 5, 6]           | 组合                 |
+| ['Hi!'] * 4                 | ['Hi!', 'Hi!', 'Hi!', 'Hi!'] | 复制                 |
+| 3 in [1, 2, 3]              | True                         | 元素是否存在于列表中 |
+| for x in [1, 2, 3]: print x | 1 2 3                        | 迭代                 |
+
+| 函数&方法               | 描述                                                         |
+| ----------------------- | ------------------------------------------------------------ |
+| len(list)               | 列表元素个数                                                 |
+| max(list)               | 返回列表元素最大值                                           |
+| min(list)               | 返回列表元素最小值                                           |
+| list(seq)               | 将元组转换为列表                                             |
+| list.append(obj)        | 在列表末尾添加新的对象                                       |
+| list.count(obj)         | 统计某个元素在列表中出现的次数                               |
+| list.extend(seq)        | 在列表末尾一次性追加另一个序列中的多个值（用新列表扩展原来的列表） |
+| list.index(obj)         | 从列表中找出某个值第一个匹配项的索引位置                     |
+| list.insert(index, obj) | 将元素插入列表                                               |
+| list.pop(obj=list[-1])  | 移除列表中的一个元素（默认最后一个元素），并且返回该元素的值 |
+| list.remove(obj)        | 移除列表中的一个元素（参数是列表中元素），并且不返回任何值   |
+| list.reverse()          | 反向列表中元素                                               |
+| list.sort([func])       | 对原列表进行排序                                             |
+
+```python
+list1 = ['a', 'b', 'e','c', 'd', 'e']
+num = list1.count("e") # 统计“e”出现的次数
+print(num)
+# 输出结果为：2
+```
+
+```python
+len1 = len(list1) # 统计列表的长度
+print(len1)
+# 输出结果为：6
+```
+
+```python
+list = ["B",7,4,9,88,1,5.6,"a"]
+list.reverse()
+print(list)
+# 输出结果为：['a', 5.6, 1, 88, 9, 4, 7, 'B']
+```
+
+```python
+list1 = ['a', 'b', 'e','c', 'd', 'e']
+list2 = list1.copy()
+print(list1,id(list1)) 
+# 输出list1，并输出list1的存储地址
+# 输出结果为：['a', 'b', 'e', 'c', 'd', 'e'] 2664088953352
+print(list2,id(list2)) 
+# 输出list2，并输出list2的存储地址
+# 输出结果为：['a', 'b', 'e', 'c', 'd', 'e'] 2664088953416
+```
+
+```python
+# sort、sorted均默认正序排序
+list = [7,4,9,88,1,5.6]
+list1 = [7,4,9,88,1,5.6]
+list2 = list.sort()
+print(list) # 输出：[1, 4, 5.6, 7, 9, 88]
+# 列表本身改变，在列表内部进行排序，sort默认正序排序
+print(list2) # 输出：None
+# 无法接收到排序后的列表
+ 
+list3 = sorted(list1)
+print(list1) # 输出：[7, 4, 9, 88, 1, 5.6]
+# 列表本身没有改变，在列表外部进行排序，sorted默认正序排序
+print(list3) # 输出：[1, 4, 5.6, 7, 9, 88]
+# 接收到排序后的列表
+
+# 用reverse来设置正序还是逆序排序
+list = [7,4,9,88,1,5.6]
+list.sort(reverse = True)
+print(list) # 输出：[88, 9, 7, 5.6, 4, 1]
+list.sort(reverse = False)
+print(list) # 输出：[1, 4, 5.6, 7, 9, 88]
+ 
+list1 = [7,4,9,88,1,5.6]
+list3 = sorted(list1,reverse = True)
+print(list3) # 输出：[88, 9, 7, 5.6, 4, 1]
+list3 = sorted(list1,reverse = False)
+print(list3) # 输出：[1, 4, 5.6, 7, 9, 88]
+```
+
+https://blog.csdn.net/azhssjaj/article/details/140344748
+
+https://blog.csdn.net/abcd51685168/article/details/139378946
 
 # 字符串
 
