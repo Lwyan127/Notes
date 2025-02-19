@@ -148,3 +148,100 @@ class Solution {
 };
 ```
 
+## [283. 移动零](https://leetcode.cn/problems/move-zeroes/)
+
+先遍历一遍：记录每个非0数之前有几个0。再遍历一遍：将每个非0数向前移动记录的数，然后将这个非0数的位置变为0，这里有个细节就是如果前面没有0，他是不移动的，要在变为0前判断一下。
+
+## [22. 括号生成](https://leetcode.cn/problems/generate-parentheses/)
+
+这括号生成一看就是要回溯的：
+
+```c++
+void backtracking(参数) {
+    if (终止条件) {
+        存放结果;
+        return;
+    }
+
+    for (选择：本层集合中元素（树中节点孩子的数量就是集合的大小）) {
+        处理节点;
+        backtracking(路径，选择列表); // 递归
+        回溯，撤销处理结果
+    }
+}
+```
+
+刚开始的做法是把这个for变成三种类型：str前面生成一个括号，str后面生成一个括号，str外套一个括号。但是这样的话像"(())(())"这样就生成不出来。看答案。
+
+**暴力**的话就是生成n个(和n个)组成的字符串，然后判断是否合法。
+
+**回溯：**
+
+如果左括号数量不大于*n*，我们可以放一个左括号。如果右括号数量小于左括号的数量，我们可以放一个右括号。
+
+这样刚开始有疑虑会不会生成不合法的")()("这样的，但是其实他每次都是push_back从后面加，然后只有当右括号数量小于左括号才会加右括号，所以不会不合法
+
+```c++
+class Solution {
+    void backtrack(vector<string>& ans, string& cur, int open, int close, int n) {
+        if (cur.size() == n * 2) {
+            ans.push_back(cur);
+            return;
+        }
+        if (open < n) {
+            cur.push_back('(');
+            backtrack(ans, cur, open + 1, close, n);
+            cur.pop_back();
+        }
+        if (close < open) {
+            cur.push_back(')');
+            backtrack(ans, cur, open, close + 1, n);
+            cur.pop_back();
+        }
+    }
+public:
+    vector<string> generateParenthesis(int n) {
+        vector<string> result;
+        string current;
+        backtrack(result, current, 0, 0, n);
+        return result;
+    }
+};
+```
+
+**动规：**
+
+这是根据一个观察到的性质来的：任何一个括号序列都一定是由‘(’开头，并且第一个‘(’一定有一个唯一与之对应的‘)’。这样一来，每一个括号序列可以用(a)b来表示，其中a与b分别是一个合法的括号序列（可以为空）。
+
+因此，n的所有答案为：( f(x) ) f(n - x - 1)，f(x)代表有x个括号的所有括号序列，这样组合一下就可以了
+
+```c++
+class Solution {
+    shared_ptr<vector<string>> cache[100] = {nullptr};
+public:
+    shared_ptr<vector<string>> generate(int n) {
+        if (cache[n] != nullptr)
+            return cache[n];
+        if (n == 0) {
+            cache[0] = shared_ptr<vector<string>>(new vector<string>{""});
+        } else {
+            auto result = shared_ptr<vector<string>>(new vector<string>);
+            for (int i = 0; i != n; ++i) {
+                auto lefts = generate(i);
+                auto rights = generate(n - i - 1);
+                for (const string& left : *lefts)
+                    for (const string& right : *rights)
+                        result -> push_back("(" + left + ")" + right);
+            }
+            cache[n] = result;
+        }
+        return cache[n];
+    }
+    vector<string> generateParenthesis(int n) {
+        return *generate(n);
+    }
+};
+```
+
+这里为了优化，使用shared_ptr为共享内存，减少不必要的数组的复制。可以看到都是直接用地址，而不是用参数，如`for (const string& left : *lefts)`
+

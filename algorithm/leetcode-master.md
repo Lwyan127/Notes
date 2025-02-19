@@ -3087,3 +3087,187 @@ public:
 遇到题目靠自己手动模拟，如果模拟可行，就可以试一试贪心策略，如果不可行，可能需要动态规划。
 
 **最好用的策略就是举反例，如果想不到反例，那么就试一试贪心吧**。
+
+## [455. 分发饼干](https://leetcode.cn/problems/assign-cookies/)
+
+大尺寸的饼干既可以满足胃口大的孩子也可以满足胃口小的孩子，那么就应该优先满足胃口大的。
+
+这里应该是饼干的数组和胃口的数组一起推进的，都是从大到小，饼干满足一个胃口，就看下一个饼干再去找能满足哪个更小一点的胃口。
+
+```c++
+class Solution {
+public:
+    int findContentChildren(vector<int>& g, vector<int>& s) {
+        sort(g.begin(), g.end());
+        sort(s.begin(), s.end());
+        int index = s.size() - 1; // 饼干数组的下标
+        int result = 0;
+        for (int i = g.size() - 1; i >= 0; i--) { // 遍历胃口
+            if (index >= 0 && s[index] >= g[i]) { // 遍历饼干
+                result++;
+                index--;
+            }
+        }
+        return result;
+    }
+};
+```
+
+同题[2410. 运动员和训练师的最大匹配数](https://leetcode.cn/problems/maximum-matching-of-players-with-trainers/)
+
+## [376. 摆动序列](https://leetcode.cn/problems/wiggle-subsequence/)
+
+不算贪心了。
+
+将坡上的数删除，或者说不计入ans即可。
+
+![image-20250219144225597](leetcode-master.assets/image-20250219144225597.png)
+
+在计算是否有峰值的时候，大家知道遍历的下标 i ，计算 prediff（nums[i] - nums[i-1]） 和 curdiff（nums[i+1] - nums[i]），如果`prediff < 0 && curdiff > 0` 或者 `prediff > 0 && curdiff < 0` 此时就有波动就需要统计。
+
+这是我们思考本题的一个大体思路，但本题要考虑三种情况：
+
+1. 情况一：上下坡中有平坡
+2. 情况二：数组首尾两端
+3. 情况三：单调坡中有平坡
+
+**情况一：上下坡中有平坡**
+
+例如 [1,2,2,2,1]这样的数组，如图：
+
+![image-20250219144306067](leetcode-master.assets/image-20250219144306067.png)
+
+在图中，当 i 指向第一个 2 的时候，`prediff > 0 && curdiff = 0` ，当 i 指向最后一个 2 的时候 `prediff = 0 && curdiff < 0`。
+
+如果我们采用，删左面三个 2 的规则，那么 当 `prediff = 0 && curdiff < 0` 也要记录一个峰值，因为他是把之前相同的元素都删掉留下的峰值。
+
+所以我们记录峰值的条件应该是： `(preDiff <= 0 && curDiff > 0) || (preDiff >= 0 && curDiff < 0)`，为什么这里允许 prediff == 0 ，就是为了 上面我说的这种情况。
+
+**情况二：数组首尾两端**
+
+例如序列[2,5]，针对以上情形，result 初始为 1（默认最右面有一个峰值），此时 curDiff > 0 && preDiff <= 0，那么 result++（计算了左面的峰值），最后得到的 result 就是 2（峰值个数为 2 即摆动序列长度为 2）
+
+**情况三：单调坡度有平坡**
+
+![image-20250219144459074](leetcode-master.assets/image-20250219144459074.png)
+
+之所以会出问题，是因为我们实时更新了 prediff。
+
+我们只需要在 这个坡度 摆动变化的时候，更新 prediff 就行，这样 prediff 在 单调区间有平坡的时候 就不会发生变化，造成我们的误判。
+
+所以本题的最终代码为：
+
+```c++
+class Solution {
+public:
+    int wiggleMaxLength(vector<int>& nums) {
+        if (nums.size() <= 1) return nums.size();
+        int curDiff = 0; // 当前一对差值
+        int preDiff = 0; // 前一对差值
+        int result = 1;  // 记录峰值个数，序列默认序列最右边有一个峰值
+        for (int i = 0; i < nums.size() - 1; i++) {
+            curDiff = nums[i + 1] - nums[i];
+            // 出现峰值
+            if ((preDiff <= 0 && curDiff > 0) || (preDiff >= 0 && curDiff < 0)) {
+                result++;
+                preDiff = curDiff; // 注意这里，只在摆动变化的时候更新prediff
+            }
+        }
+        return result;
+    }
+};
+```
+
+**另一个思路：动规**，显然时间复杂度和空间复杂度会大很多
+
+很容易可以发现，对于我们当前考虑的这个数，要么是作为山峰（即 nums[i] > nums[i-1]），要么是作为山谷（即 nums[i] < nums[i - 1]）。
+
+- 设 dp 状态`dp[i][0]`，表示考虑前 i 个数，第 i 个数作为山峰的摆动子序列的最长长度
+- 设 dp 状态`dp[i][1]`，表示考虑前 i 个数，第 i 个数作为山谷的摆动子序列的最长长度
+
+则转移方程为：
+
+- `dp[i][0] = max(dp[i][0], dp[j][1] + 1)`，其中`0 < j < i`且`nums[j] < nums[i]`，表示将 nums[i]接到前面某个山谷后面，作为山峰。
+- `dp[i][1] = max(dp[i][1], dp[j][0] + 1)`，其中`0 < j < i`且`nums[j] > nums[i]`，表示将 nums[i]接到前面某个山峰后面，作为山谷。
+
+初始状态：
+
+由于一个数可以接到前面的某个数后面，也可以以自身为子序列的起点，所以初始状态为：`dp[0][0] = dp[0][1] = 1`。
+
+```c++
+class Solution {
+public:
+    int dp[1005][2];
+    int wiggleMaxLength(vector<int>& nums) {
+        memset(dp, 0, sizeof(dp));
+        dp[0][0] = dp[0][1] = 1;
+        for (int i = 1; i < nums.size(); ++i) {
+            dp[i][0] = dp[i][1] = 1;
+            for (int j = 0; j < i; ++j) {
+                if (nums[j] > nums[i]) dp[i][1] = max(dp[i][1], dp[j][0] + 1);
+            }
+            for (int j = 0; j < i; ++j) {
+                if (nums[j] < nums[i]) dp[i][0] = max(dp[i][0], dp[j][1] + 1);
+            }
+        }
+        return max(dp[nums.size() - 1][0], dp[nums.size() - 1][1]);
+    }
+};
+```
+
+## [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
+
+ 和数组的[53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)可以对比一下，那道题都为正数，所以有一个target用来找到最小和，又正因为是正数，所以可以滑动这个窗口，因为窗口左边向右移动一个一定是sum减少，窗口右边向右移动一个一定是sum增大，通过这样的性质就能滑动窗口遍历找到最小和。
+
+这道题存在负数，因为负数的存在，所以可以找最大和。
+
+**贪心：**如果 -2 1 在一起，计算起点的时候，一定是从 1 开始计算，因为负数只会拉低总和，这就是贪心贪的地方！
+
+局部最优：当前“连续和”为负数的时候立刻放弃，从下一个元素重新计算“连续和”，因为负数加上下一个元素 “连续和”只会越来越小。
+
+全局最优：选取最大“连续和”
+
+**局部最优的情况下，并记录最大的“连续和”，可以推出全局最优**。
+
+```c++
+class Solution {
+public:
+    int maxSubArray(vector<int>& nums) {
+        int result = INT32_MIN;
+        int count = 0;
+        for (int i = 0; i < nums.size(); i++) {
+            count += nums[i];
+            if (count > result) { // 取区间累计的最大值（相当于不断确定最大子序终止位置）
+                result = count;
+            }
+            if (count <= 0) count = 0; // 相当于重置最大子序起始位置，因为遇到负数一定是拉低总和
+        }
+        return result;
+    }
+};
+```
+
+## [122. 买卖股票的最佳时机 II](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/)
+
+**贪心：只收集正利润即可，总利润就是所有正利润之和**
+
+```c++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int result = 0;
+        for (int i = 1; i < prices.size(); i++) {
+            result += max(prices[i] - prices[i - 1], 0);
+        }
+        return result;
+    }
+};
+```
+
+## [55. 跳跃游戏](https://leetcode.cn/problems/jump-game/)
+
+遍历nums，每次更新能到的最远的下标，当最远的下标就是这次循环的下标时，说明再也无法前进了，如果这里不是最后一个下标，则false，否则true
+
+## [45. 跳跃游戏 II](https://leetcode.cn/problems/jump-game-ii/)
+
+每次在能走的范围里找下一次能走的最大范围，到达当前范围的最大了，就将下一次能走的最大范围赋值给当前的范围，这样不用管是哪个坐标能走最大范围。
