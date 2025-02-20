@@ -3271,3 +3271,118 @@ public:
 ## [45. 跳跃游戏 II](https://leetcode.cn/problems/jump-game-ii/)
 
 每次在能走的范围里找下一次能走的最大范围，到达当前范围的最大了，就将下一次能走的最大范围赋值给当前的范围，这样不用管是哪个坐标能走最大范围。
+
+# 动态规划
+
+1. 确定dp数组（dp table）以及下标的含义
+2. 确定递推公式
+3. dp数组如何初始化
+4. 确定遍历顺序
+5. 举例推导dp数组
+
+**多拿草稿纸推导**
+
+## [509. 斐波那契数](https://leetcode.cn/problems/fibonacci-number/)
+
+easy
+
+## [70. 爬楼梯](https://leetcode.cn/problems/climbing-stairs/)
+
+类似斐波那契数列，初始值别用dp[0]，因为dp[0]在题目中实际上要赋值为1才是正确答案，但是根据定义dp[0]相当于爬0层要几步，这是没有意义的。初始值使用dp[1] = 1, dp[2] = 2。
+
+其余就是少用递归，用循环来迭代，不然容易tle和sof。
+
+下面这是做了空间上的优化。
+
+```c++
+// 版本二
+class Solution {
+public:
+    int climbStairs(int n) {
+        if (n <= 1) return n;
+        int dp[3];
+        dp[1] = 1;
+        dp[2] = 2;
+        for (int i = 3; i <= n; i++) {
+            int sum = dp[1] + dp[2];
+            dp[1] = dp[2];
+            dp[2] = sum;
+        }
+        return dp[2];
+    }
+};
+```
+
+## [746. 使用最小花费爬楼梯](https://leetcode.cn/problems/min-cost-climbing-stairs/)
+
+递推公式：`dp[i] = min(dp[i - 1] + cost[i - 1], dp[i - 2] + cost[i - 2])`
+
+初始化：`dp[0] = 0，dp[1] = 0`
+
+## [62. 不同路径](https://leetcode.cn/problems/unique-paths/)
+
+递推公式：`dp[i][j] = dp[i - 1][j] + dp[i][j - 1]`
+
+初始化：`dp[i][0] = 1，dp[0][j] = 1`
+
+![image-20250220153033278](leetcode-master.assets/image-20250220153033278.png)
+
+```c++
+// 二维数组 m行n列 初始值为0
+vector<vector<int>> dp(m, vector<int>(n, 0));
+```
+
+也可以用一个一维数组（也可以理解是滚动数组）做，相当于每一行每一行地下来。
+
+```c++
+class Solution {
+public:
+    int uniquePaths(int m, int n) {
+        vector<int> dp(n);
+        for (int i = 0; i < n; i++) dp[i] = 1;
+        for (int j = 1; j < m; j++) {
+            for (int i = 1; i < n; i++) {
+                dp[i] += dp[i - 1];
+            }
+        }
+        return dp[n - 1];
+    }
+};
+```
+
+## [63. 不同路径 II](https://leetcode.cn/problems/unique-paths-ii/)
+
+多了个障碍物，初始化变一下：
+
+![image-20250220154334315](leetcode-master.assets/image-20250220154334315.png)
+
+```c++
+vector<vector<int>> dp(m, vector<int>(n, 0));
+for (int i = 0; i < m && obstacleGrid[i][0] == 0; i++) dp[i][0] = 1;
+for (int j = 0; j < n && obstacleGrid[0][j] == 0; j++) dp[0][j] = 1;
+```
+
+## [343. 整数拆分](https://leetcode.cn/problems/integer-break/)
+
+递推公式：`dp[i] = max({dp[i], (i - j) * j, dp[i - j] * j})`
+
+分析一下，比如10，则拆开1+9，2+8...然后9，8...这些都是前面已经拆过的就是dp[9],dp[8]...，乘积就是1*dp[9]，2 * dp[8]....，比较所有乘积取最大即可，但是这样就能遍历所有的拆分吗？
+
+实际上，仔细看会发现由于dp[9]是拆成至少两个数的最大乘积，所以上述所有的拆分都是拆成三个数，然后比较乘积，因此就需要再比较1 * 9，2 * 8....
+
+```c++
+class Solution {
+public:
+    int integerBreak(int n) {
+        vector<int> dp(n + 1);
+        dp[2] = 1;
+        for (int i = 3; i <= n ; i++) {
+            for (int j = 1; j <= i / 2; j++) {
+                dp[i] = max(dp[i], max((i - j) * j, dp[i - j] * j));
+            }
+        }
+        return dp[n];
+    }
+};
+```
+
