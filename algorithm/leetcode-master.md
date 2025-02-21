@@ -3272,6 +3272,72 @@ public:
 
 每次在能走的范围里找下一次能走的最大范围，到达当前范围的最大了，就将下一次能走的最大范围赋值给当前的范围，这样不用管是哪个坐标能走最大范围。
 
+## [1005. K 次取反后最大化的数组和](https://leetcode.cn/problems/maximize-sum-of-array-after-k-negations/)
+
+思路很简单，代码容易写的很丑
+
+那么本题的解题步骤为：
+
+- 第一步：将数组按照绝对值大小从大到小排序，**注意要按照绝对值的大小**
+- 第二步：从前向后遍历，遇到负数将其变为正数，同时K--
+- 第三步：如果K还大于0，那么反复转变数值最小的元素，将K用完
+- 第四步：求和
+
+```c++
+class Solution {
+static bool cmp(int a, int b) {
+    return abs(a) > abs(b);
+}
+public:
+    int largestSumAfterKNegations(vector<int>& A, int K) {
+        sort(A.begin(), A.end(), cmp);       // 第一步
+        for (int i = 0; i < A.size(); i++) { // 第二步
+            if (A[i] < 0 && K > 0) {
+                A[i] *= -1;
+                K--;
+            }
+        }
+        if (K % 2 == 1) A[A.size() - 1] *= -1; // 第三步
+        int result = 0;
+        for (int a : A) result += a;        // 第四步
+        return result;
+    }
+};
+```
+
+## [134. 加油站](https://leetcode.cn/problems/gas-station/)
+
+这题有点复杂的。
+
+每个加油站的剩余量rest[i]为gas[i] - cost[i]。
+
+i从0开始累加rest[i]，和记为curSum，一旦curSum小于零，说明[0, i]区间都不能作为起始位置，因为这个区间选择任何一个位置作为起点，到i这里都会断油，那么起始位置从i+1算起，再从0计算curSum。
+
+可能有疑惑[0,i]的curSum小于0，有没有可能[x,i]（x为小于i的一个数）的curSum大于0？其实不会，因为这样的话[0,x - 1]的curSum就小于0了，x就是新的起点了。
+
+```c++
+class Solution {
+public:
+    int canCompleteCircuit(vector<int>& gas, vector<int>& cost) {
+        int curSum = 0;
+        int totalSum = 0;
+        int start = 0;
+        for (int i = 0; i < gas.size(); i++) {
+            curSum += gas[i] - cost[i];
+            totalSum += gas[i] - cost[i];
+            if (curSum < 0) {   // 当前累加rest[i]和 curSum一旦小于0
+                start = i + 1;  // 起始位置更新为i+1
+                curSum = 0;     // curSum从0开始
+            }
+        }
+        if (totalSum < 0) return -1; // 说明怎么走都不可能跑一圈了
+        return start;
+    }
+};
+```
+
+
+
 # 动态规划
 
 1. 确定dp数组（dp table）以及下标的含义
@@ -3386,3 +3452,131 @@ public:
 };
 ```
 
+## [96. 不同的二叉搜索树](https://leetcode.cn/problems/unique-binary-search-trees/)
+
+画图即可发现规律。
+
+![image-20250221142433150](leetcode-master.assets/image-20250221142433150.png)
+
+在计算每个dp[i]时，令根的值为1~i，然后全加起来即可。
+
+递归公式：`dp[i] += dp[j - 1] * dp[i - j]`，j-1 为j为头结点左子树节点数量，i-j 为以j为头结点右子树节点数量
+
+初始值：`dp[0] = 1`
+
+```c++
+class Solution {
+public:
+    int numTrees(int n) {
+        vector<int> dp(n + 1);
+        dp[0] = 1;
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= i; j++) {
+                dp[i] += dp[j - 1] * dp[i - j];
+            }
+        }
+        return dp[n];
+    }
+};
+```
+
+## 01背包问题
+
+有n件物品和一个最多能背重量为w 的背包。第i件物品的重量是weight[i]，得到的价值是value[i] 。**每件物品只能用一次**，求解将哪些物品装入背包里物品价值总和最大。
+
+举例：3个物品，背包最大重量为4，则建二维数组`dp[3][4 + 1]`如下
+
+![image-20250221151125259](leetcode-master.assets/image-20250221151125259.png)
+
+**dp[i] [j] 表示从下标为[0-i]的物品里任意取，放进容量为j的背包，价值总和最大是多少**
+
+**递推公式：**`dp[i][j] = max(dp[i - 1][j], dp[i - 1][j - weight[i]] + value[i]);`
+
+- **不放物品i**：由`dp[i - 1`][j]推出，即背包容量为j，里面不放物品i的最大价值，此时`dp[i][j]`就是`dp[i - 1`][j]。(其实就是当物品i的重量大于背包j的重量时，物品i无法放进背包中，所以背包内的价值依然和前面相同。)
+- **放物品i**：由`dp[i - 1][j - weight[i]]`推出，`dp[i - 1][j - weight[i]] `为背包容量为j - weight[i]的时候不放物品i的最大价值，那么`dp[i - 1][j - weight[i]] + value[i] `（物品i的价值），就是背包放物品i得到的最大价值
+
+**初始值：**
+
+![image-20250221151446842](leetcode-master.assets/image-20250221151446842.png)
+
+```c++
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+class Solution{
+    public:
+        int solve(vector<int>& weight, vector<int>& value, int m, int n) {
+            vector<vector<int>> dp(m, vector<int>(n + 1, 0));
+            for (int i = 0; i <= n; i++) {
+                if (i >= weight[0]) dp[0][i] = value[0];
+            }
+            for (int i = 1; i < m; i++) {
+                for (int j = 1; j <= n; j++) {
+                    if (j >= weight[i]) dp[i][j] = max(dp[i - 1][j], dp[i - 1][j - weight[i]] + value[i]);
+                    else dp[i][j] = dp[i - 1][j];
+                }
+            }
+            return dp[m - 1][n];
+        }
+		
+        int solveUse1Dvector(vector<int>& weight, vector<int>& value, int m, int n) {
+            vector<int> dp(n + 1, 0);
+            for (int i = 0; i < m; i++) {
+                for (int j = n; j >= 0; j--) {
+                    if (j >= weight[i]) dp[j] = max(dp[j], dp[j - weight[i]] + value[i]);
+                }
+            }
+            return dp[n];
+        }
+};
+
+int main() {
+    int m, n;
+    cin >> m >> n;
+    vector<int> weight(m + 1), value(m + 1);
+    for (int i = 0; i < m; i++) cin >> weight[i];
+    for (int i = 0; i < m; i++) cin >> value[i];
+    Solution solution;
+    cout << solution.solveUse1Dvector(weight, value, m, n);
+    system("pause");
+    return 0;
+}
+```
+
+上面的代码也有使用一维数组来代替二维数组，也就是滚动数组。
+
+**但是，滚动数组在这里使用有一个point：每次进入新的一行都是从后往前计算新一行的dp，因为如果从前往后的话，`dp[i][j] = max(dp[i - 1][j], dp[i - 1][j - weight[i]] + value[i]);`中的`dp[i - 1][j - weight[i]]`是会被覆盖掉的，二维数组是不会覆盖的，所以要从后往前计算，同时要记得全初始化为0**
+
+## [416. 分割等和子集](https://leetcode.cn/problems/partition-equal-subset-sum/)
+
+这是包装过的**01背包问题：**
+
+- 背包的体积为sum / 2
+- 背包要放入的商品（集合里的元素）重量为 元素的数值，价值也为元素的数值
+- 背包如果正好装满，说明找到了总和为 sum / 2 的子集。
+- 背包中每一个元素是**不可重复放入**。
+
+那么如果背包容量为target， dp[target]就是装满 背包之后的重量，所以 当 dp[target] == target 的时候，背包就装满了。
+
+有录友可能想，那还有装不满的时候？
+
+拿输入数组 [1, 5, 11, 5]，举例， dp[7] 只能等于 6，因为 只能放进 1 和 5。
+
+而dp[6] 就可以等于6了，放进1 和 5，那么dp[6] == 6，说明背包装满了。
+
+理解上面即可，代码和上一题的01背包基本一致。
+
+## [1049. 最后一块石头的重量 II](https://leetcode.cn/problems/last-stone-weight-ii/)
+
+又是一道包装过的**01背包问题**，和上一题的本质类似：**找到数组中小于等于target的最大和**
+
+仔细看本题，动手算一下，发现这个就是将stones分成两堆，然后让两堆重量的差最小，这个最小值就是答案。
+
+用在**找到数组中小于等于target的最大和**，就是让两堆的重量都向重量总和的一半靠拢。这样我们可以找到小于重量总和的一半的最大值。和上一题一样，还不用管sum是奇数还是偶数，因为你举个例子就会发现这个答案是一样的。
+
+- 背包的体积为sum / 2
+- 背包要放入的商品（集合里的元素）重量为 元素的数值，价值也为元素的数值
+- 背包如果正好装满，说明找到了总和为 sum / 2 的子集。
+- 背包中每一个元素是**不可重复放入**。
