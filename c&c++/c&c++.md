@@ -1583,11 +1583,11 @@ vector<int> list = {1,2,3,4,5,6,7};
 vector<int> list {1,2,3,4,5,6,7};  // 直接赋值
 
 // 二维数组
-vector<vector<int>> a(r, vector<int>(c))；
+vector<vector<int>> a(row, vector<int>(column))；  
 int row = a.size();          //获取行数
 int column = a[0].size();    //获取列数
 
-vector< vector<int> > a(r, vector<int>(c, 0));  // 初始值为0
+vector< vector<int> > a(row, vector<int>(column, 0));  // 初始值为0
 
 ```
 
