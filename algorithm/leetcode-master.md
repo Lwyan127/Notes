@@ -3336,7 +3336,343 @@ public:
 };
 ```
 
+## [135. 分发糖果](https://leetcode.cn/problems/candy/)
 
+思路有点难想：**看到这种题目一定要想如何确定一个维度，然后再按照另一个维度重新排列。**
+
+这个分为考虑每个孩子的左边和考虑每个孩子的右边。
+
+考虑每个孩子的右边：从前往后遍历，candy[i+1]与candy[i]比较，如果ratings[i] > ratings[i - 1] 那么[i]的糖 一定要比[i - 1]的糖多一个，所以贪心：candyVec[i] = candyVec[i - 1] + 1。
+
+考虑每个孩子的右边：因为 rating[5]与rating[4]的比较 要利用上 rating[5]与rating[6]的比较结果，所以 要从后向前遍历。如果从前向后遍历，rating[5]与rating[4]的比较 就不能用上 rating[5]与rating[6]的比较结果了 。
+
+如果 ratings[i] > ratings[i + 1]，此时candyVec[i]（第i个小孩的糖果数量）就有两个选择了，一个是candyVec[i + 1] + 1（从右边这个加1得到的糖果数量），一个是candyVec[i]（之前比较右孩子大于左孩子得到的糖果数量）。选择较大的才能保持对左边candyVec[i - 1]的糖果多，也比右边candyVec[i + 1]的糖果多。
+
+```c++
+class Solution {
+public:
+    int candy(vector<int>& ratings) {
+        vector<int> candyVec(ratings.size(), 1);
+        // 从前向后
+        for (int i = 1; i < ratings.size(); i++) {
+            if (ratings[i] > ratings[i - 1]) candyVec[i] = candyVec[i - 1] + 1;
+        }
+        // 从后向前
+        for (int i = ratings.size() - 2; i >= 0; i--) {
+            if (ratings[i] > ratings[i + 1] ) {
+                candyVec[i] = max(candyVec[i], candyVec[i + 1] + 1);
+            }
+        }
+        // 统计结果
+        int result = 0;
+        for (int i = 0; i < candyVec.size(); i++) result += candyVec[i];
+        return result;
+    }
+};
+```
+
+## [860. 柠檬水找零](https://leetcode.cn/problems/lemonade-change/)
+
+简单模拟一下，给20找零时先考虑10+5，再考虑5+5+5
+
+## [406. 根据身高重建队列](https://leetcode.cn/problems/queue-reconstruction-by-height/)
+
+**看到这种题目一定要想如何确定一个维度，然后再按照另一个维度重新排列。**
+
+先初始化答案数组。从最矮的人升序考虑，或者从最高的人降序考虑都可以。
+
+从最高的人降序考虑：按照身高排序之后，优先按身高高的people的k来插入，后序插入节点也不会影响前面已经插入的节点，最终按照k的规则完成了队列。
+
+排序完的people： [[7,0], [7,1], [6,1], [5,0], [5,2], [4,4]]
+
+插入的过程：
+
+- 插入[7,0]：[[7,0]]
+- 插入[7,1]：[[7,0],[7,1]]
+- 插入[6,1]：[[7,0],[6,1],[7,1]]
+- 插入[5,0]：[[5,0],[7,0],[6,1],[7,1]]
+- 插入[5,2]：[[5,0],[7,0],[5,2],[6,1],[7,1]]
+- 插入[4,4]：[[5,0],[7,0],[5,2],[6,1],[4,4],[7,1]]
+
+**代码中的cmp仔细看看。**
+
+```c++
+// 版本一
+class Solution {
+public:
+    static bool cmp(const vector<int>& a, const vector<int>& b) {
+        if (a[0] == b[0]) return a[1] < b[1];
+        return a[0] > b[0];
+    }
+    vector<vector<int>> reconstructQueue(vector<vector<int>>& people) {
+        sort (people.begin(), people.end(), cmp);
+        vector<vector<int>> que;
+        for (int i = 0; i < people.size(); i++) {
+            int position = people[i][1];
+            que.insert(que.begin() + position, people[i]);
+        }
+        return que;
+    }
+};
+```
+
+但使用vector是非常费时的，C++中vector（可以理解是一个动态数组，底层是普通数组实现的）如果插入元素大于预先普通数组大小，vector底部会有一个扩容的操作，即申请两倍于原先普通数组的大小，然后把数据拷贝到另一个更大的数组上。
+
+所以使用vector（动态数组）来insert，是费时的，插入再拷贝的话，单纯一个插入的操作就是O(n^2^)了，甚至可能拷贝好几次，就不止O(n^2^)了。
+
+```c++
+// 版本二
+class Solution {
+public:
+    // 身高从大到小排（身高相同k小的站前面）
+    static bool cmp(const vector<int>& a, const vector<int>& b) {
+        if (a[0] == b[0]) return a[1] < b[1];
+        return a[0] > b[0];
+    }
+    vector<vector<int>> reconstructQueue(vector<vector<int>>& people) {
+        sort (people.begin(), people.end(), cmp);
+        list<vector<int>> que; // list底层是链表实现，插入效率比vector高的多
+        for (int i = 0; i < people.size(); i++) {
+            int position = people[i][1]; // 插入到下标为position的位置
+            std::list<vector<int>>::iterator it = que.begin();
+            while (position--) { // 寻找在插入位置
+                it++;
+            }
+            que.insert(it, people[i]);
+        }
+        return vector<vector<int>>(que.begin(), que.end());
+    }
+};
+```
+
+## [452. 用最少数量的箭引爆气球](https://leetcode.cn/problems/minimum-number-of-arrows-to-burst-balloons/)
+
+局部最优：当气球出现重叠，一起射，所用弓箭最少。全局最优：把所有气球射爆所用弓箭最少。
+
+**为了让气球尽可能的重叠，需要对数组按照起点进行排序**。
+
+既然按照起始位置排序，那么就从前向后遍历气球数组，靠左尽可能让气球重复。**如果气球重叠了，重叠气球中右边边界的最小值 之前的区间一定需要一个弓箭**。
+
+```c++
+class Solution {
+private:
+    static bool cmp(const vector<int>& a, const vector<int>& b) {
+        return a[0] < b[0];
+    }
+public:
+    int findMinArrowShots(vector<vector<int>>& points) {
+        if (points.size() == 0) return 0;
+        sort(points.begin(), points.end(), cmp);
+
+        int result = 1; // points 不为空至少需要一支箭
+        for (int i = 1; i < points.size(); i++) {
+            if (points[i][0] > points[i - 1][1]) {  // 气球i和气球i-1不挨着，注意这里不是>=
+                result++; // 需要一支箭
+            }
+            else {  // 气球i和气球i-1挨着
+                points[i][1] = min(points[i - 1][1], points[i][1]); // 更新重叠气球最小右边界
+            }
+        }
+        return result;
+    }
+};
+```
+
+## [435. 无重叠区间](https://leetcode.cn/problems/non-overlapping-intervals/)
+
+和上一题类似，先排序，然后从前往后遇到重叠区间了就ans++，然后更新最右边的顶点为较小的区间右端点。
+
+```c++
+class Solution {
+public:
+    static bool cmp(vector<int> x, vector<int> y) {
+        if (x[0] == y[0]) return x[1] < y[1];
+        return x[0] < y[0];
+    }
+    
+    int eraseOverlapIntervals(vector<vector<int>>& intervals) {
+        if (intervals.size() == 0) return 0;
+        sort(intervals.begin(), intervals.end(), cmp);
+        int count = 0; // 注意这里从0开始，因为是记录重叠区间
+        for (int i = 1; i < intervals.size(); i++) {
+            if (intervals[i][0] < intervals[i - 1][1]) { //重叠情况
+                intervals[i][1] = min(intervals[i - 1][1], intervals[i][1]);
+                count++;
+            }
+        }
+        return count;
+    }
+};
+
+```
+
+## [763. 划分字母区间](https://leetcode.cn/problems/partition-labels/)
+
+可以分为如下两步：
+
+- 统计每一个字符最后出现的位置
+- 从头遍历字符，并更新字符的最远出现下标，如果找到字符最远出现位置下标和当前下标相等了，则找到了分割点
+
+```c++
+class Solution {
+public:
+    vector<int> partitionLabels(string S) {
+        int hash[27] = {0}; // i为字符，hash[i]为字符出现的最后位置
+        for (int i = 0; i < S.size(); i++) { // 统计每一个字符最后出现的位置
+            hash[S[i] - 'a'] = i;
+        }
+        vector<int> result;
+        int left = 0;
+        int right = 0;
+        for (int i = 0; i < S.size(); i++) {
+            right = max(right, hash[S[i] - 'a']); // 找到字符出现的最远边界
+            if (i == right) {
+                result.push_back(right - left + 1);
+                left = i + 1;
+            }
+        }
+        return result;
+    }
+};
+```
+
+## [56. 合并区间](https://leetcode.cn/problems/merge-intervals/)
+
+挺简单的，遍历一遍即可。
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> merge(vector<vector<int>>& intervals) {
+        vector<vector<int>> result;
+        if (intervals.size() == 0) return result; // 区间集合为空直接返回
+        // 排序的参数使用了lambda表达式
+        sort(intervals.begin(), intervals.end(), [](const vector<int>& a, const vector<int>& b){return a[0] < b[0];});
+
+        // 第一个区间就可以放进结果集里，后面如果重叠，在result上直接合并
+        result.push_back(intervals[0]); 
+
+        for (int i = 1; i < intervals.size(); i++) {
+            if (result.back()[1] >= intervals[i][0]) { // 发现重叠区间
+                // 合并区间，只更新右边界就好，因为result.back()的左边界一定是最小值，因为我们按照左边界排序的
+                result.back()[1] = max(result.back()[1], intervals[i][1]); 
+            } else {
+                result.push_back(intervals[i]); // 区间不重叠 
+            }
+        }
+        return result;
+    }
+};
+```
+
+## 738.单调递增的数字
+
+我的做法：手动推一遍可知，当遇到12553....这种数字时，答案就是12499....，所以就直接按照这个模拟即可。
+
+标答：
+
+例如：98，一旦出现strNum[i - 1] > strNum[i]的情况（非单调递增），首先想让strNum[i - 1]--，然后strNum[i]给为9，这样这个整数就是89。
+
+从前往后遍历还是从后往前：举个例子，数字：332，从前向后遍历的话，那么就把变成了329，此时2又小于了第一位的3了，真正的结果应该是299。那么从后向前遍历，就可以重复利用上次比较得出的结果了，从后向前遍历332的数值变化为：332 -> 329 -> 299。
+
+使用string来代替数字显然更快。用到的函数：
+
+```c++
+int n = 10;
+string s = to_string(n);
+int n_new = stoi(s);
+```
+
+代码：
+
+```c++
+class Solution {
+public:
+    int monotoneIncreasingDigits(int N) {
+        string strNum = to_string(N);
+        // flag用来标记赋值9从哪里开始
+        // 设置为这个默认值，为了防止第二个for循环在flag没有被赋值的情况下执行
+        int flag = strNum.size();
+        for (int i = strNum.size() - 1; i > 0; i--) {
+            if (strNum[i - 1] > strNum[i] ) {
+                flag = i;
+                strNum[i - 1]--;
+            }
+        }
+        for (int i = flag; i < strNum.size(); i++) {
+            strNum[i] = '9';
+        }
+        return stoi(strNum);
+    }
+};
+```
+
+## [968. 监控二叉树](https://leetcode.cn/problems/binary-tree-cameras/)
+
+结合二叉树遍历。首先，可以观察到靠近叶子一定是如下的状态：
+
+![image-20250226143234520](leetcode-master.assets/image-20250226143234520.png)
+
+这时，就相当于去掉这部分已经被监控的树，再看父节点。这就是贪心：从叶子往根跑：
+
+- **深度从上到下数：层序遍历、前序遍历。**
+- **高度从下到上数：后序遍历**
+
+因此使用**后序遍历**。
+
+先在纸上模拟，发现有三种状态：未被监控（0）、有摄像头（1）、被监控（2）。然后每次后序遍历到父节点时分支判断即可。
+
+```c++
+// 版本一
+class Solution {
+private:
+    int result;
+    int traversal(TreeNode* cur) {
+
+        // 空节点，该节点有覆盖
+        if (cur == NULL) return 2;
+
+        int left = traversal(cur->left);    // 左
+        int right = traversal(cur->right);  // 右
+
+        // 情况1
+        // 左右节点都有覆盖
+        if (left == 2 && right == 2) return 0;
+
+        // 情况2
+        // left == 0 && right == 0 左右节点无覆盖
+        // left == 1 && right == 0 左节点有摄像头，右节点无覆盖
+        // left == 0 && right == 1 左节点有无覆盖，右节点摄像头
+        // left == 0 && right == 2 左节点无覆盖，右节点覆盖
+        // left == 2 && right == 0 左节点覆盖，右节点无覆盖
+        if (left == 0 || right == 0) {
+            result++;
+            return 1;
+        }
+
+        // 情况3
+        // left == 1 && right == 2 左节点有摄像头，右节点有覆盖
+        // left == 2 && right == 1 左节点有覆盖，右节点有摄像头
+        // left == 1 && right == 1 左右节点都有摄像头
+        // 其他情况前段代码均已覆盖
+        if (left == 1 || right == 1) return 2;
+
+        // 以上代码我没有使用else，主要是为了把各个分支条件展现出来，这样代码有助于读者理解
+        // 这个 return -1 逻辑不会走到这里。
+        return -1;
+    }
+
+public:
+    int minCameraCover(TreeNode* root) {
+        result = 0;
+        // 情况4
+        if (traversal(root) == 0) { // root 无覆盖
+            result++;
+        }
+        return result;
+    }
+};
+```
 
 # 动态规划
 
@@ -3482,6 +3818,8 @@ public:
 
 ## 01背包问题
 
+![image-20250226155532139](leetcode-master.assets/image-20250226155532139.png)
+
 有n件物品和一个最多能背重量为w 的背包。第i件物品的重量是weight[i]，得到的价值是value[i] 。**每件物品只能用一次**，求解将哪些物品装入背包里物品价值总和最大。
 
 举例：3个物品，背包最大重量为4，则建二维数组`dp[3][4 + 1]`如下
@@ -3495,7 +3833,7 @@ public:
 - **不放物品i**：由`dp[i - 1`][j]推出，即背包容量为j，里面不放物品i的最大价值，此时`dp[i][j]`就是`dp[i - 1`][j]。(其实就是当物品i的重量大于背包j的重量时，物品i无法放进背包中，所以背包内的价值依然和前面相同。)
 - **放物品i**：由`dp[i - 1][j - weight[i]]`推出，`dp[i - 1][j - weight[i]] `为背包容量为j - weight[i]的时候不放物品i的最大价值，那么`dp[i - 1][j - weight[i]] + value[i] `（物品i的价值），就是背包放物品i得到的最大价值
 
-**初始值：**
+**初始值：如果是二维数组静态（每个空值只会更新一次）的话，如下图所示；如果是滚动数组（根据物品数量循环，每次都更新整个数组，可能是一维也可能是二维的），全初始化为0**
 
 ![image-20250221151446842](leetcode-master.assets/image-20250221151446842.png)
 
@@ -3580,3 +3918,290 @@ int main() {
 - 背包要放入的商品（集合里的元素）重量为 元素的数值，价值也为元素的数值
 - 背包如果正好装满，说明找到了总和为 sum / 2 的子集。
 - 背包中每一个元素是**不可重复放入**。
+
+## [494. 目标和](https://leetcode.cn/problems/target-sum/)
+
+如何转化为01背包问题呢。
+
+假设加法的总和为x，那么减法对应的总和就是y = sum - x。
+
+所以我们要求的是 x - y = x - (sum - x) = target
+
+x = (sum + target) / 2
+
+y = (sum - target) / 2
+
+**此时问题就转化为，装满容量为x的背包，有几种方法**。
+
+**dp[j] 表示：填满j（包括j）这么大容积的包，有dp[j]种方法**
+
+只要搞到nums[i]，凑成dp[j]就有dp[j - nums[i]] 种方法。
+
+例如：dp[j]，j 为5，
+
+- 已经有一个1（nums[i]） 的话，有 dp[4]种方法 凑成 容量为5的背包。
+- 已经有一个2（nums[i]） 的话，有 dp[3]种方法 凑成 容量为5的背包。
+- 已经有一个3（nums[i]） 的话，有 dp[2]中方法 凑成 容量为5的背包
+- 已经有一个4（nums[i]） 的话，有 dp[1]中方法 凑成 容量为5的背包
+- 已经有一个5 （nums[i]）的话，有 dp[0]中方法 凑成 容量为5的背包
+
+那么凑整dp[5]有多少方法呢，也就是把 所有的 dp[j - nums[i]] 累加起来。
+
+**所以求组合类问题的公式，都是类似这种：**
+
+```c++
+dp[j] += dp[j - nums[i]]
+```
+
+由上面公式可知**初始化 dp[0] 为 1**，如果dp[0]为0的话，后面全都变为了0。
+
+用滚动数组。
+
+```c++
+class Solution {
+	public:
+		int findTargetSumWays(vector<int>& nums, int target) {
+			int sum = 0;
+			for (auto num: nums) sum += num;
+            if (sum + target < 0 || sum - target < 0) return 0;  // 根据没过的测试样例可知前面分析中的x和y都为正数，才能使用dp继续做下去。
+			if ((sum + target) % 2 == 1) return 0;
+			int weight = (sum + target) / 2;
+			vector<int> dp(weight + 1, 0);
+			dp[0] = 1;
+			for (int i = 0; i < nums.size(); i++) {
+				for (int j = weight; j >= 0; j--) {
+					if (j >= nums[i]) {
+						dp[j] += dp[j - nums[i]];
+					}
+				}
+			}
+			return dp[weight];
+		}
+};
+```
+
+## [474. 一和零](https://leetcode.cn/problems/ones-and-zeroes/)
+
+本题其实是01背包问题，只不过这个背包有两个维度，一个是m 一个是n。
+
+**`dp[i][j]：最多有i个0和j个1的strs的最大子集的大小为dp[i][j]`**。这其实是一个滚动数组，但是变成二维的了。
+
+**`递推公式：dp[i][j] = max(dp[i][j], dp[i - zeroNum][j - oneNum] + 1);`**
+
+**初始化：这种实际是滚动数组的全初始化为0即可。**
+
+```c++
+class Solution {
+public:
+    int findMaxForm(vector<string>& strs, int m, int n) {
+        vector<vector<int>> dp(m + 1, vector<int> (n + 1, 0)); // 默认初始化0
+        for (string str : strs) { // 遍历物品
+            int oneNum = 0, zeroNum = 0;
+            for (char c : str) {
+                if (c == '0') zeroNum++;
+                else oneNum++;
+            }
+            for (int i = m; i >= zeroNum; i--) { // 遍历背包容量且从后向前遍历！
+                for (int j = n; j >= oneNum; j--) {
+                    dp[i][j] = max(dp[i][j], dp[i - zeroNum][j - oneNum] + 1);
+                }
+            }
+        }
+        return dp[m][n];
+    }
+};
+```
+
+## 完全背包
+
+**完全背包和01背包问题唯一不同的地方就是，每种物品有无限件**。
+
+完全背包的物品是可以添加多次的，所以要**从小到大去遍历，和01背包的滚动数组中遍历方向相反即可，**即：
+
+```c++
+// 先遍历物品，再遍历背包
+for(int i = 0; i < weight.size(); i++) { // 遍历物品
+    for(int j = weight[i]; j <= bagWeight ; j++) { // 遍历背包容量
+        dp[j] = max(dp[j], dp[j - weight[i]] + value[i]);
+    }
+}
+```
+
+**在01背包中，对于一维dp数组来说，其实两个for循环嵌套顺序是外层为物品遍历，内层为重量遍历。**
+
+因为一维dp的写法，背包容量一定是要倒序遍历（原因上面已经讲了），如果遍历背包容量放在上一层，那么每个dp[j]就只会放入一个物品，即：背包里只放入了一个物品。
+
+**在完全背包中，对于一维dp数组来说，其实两个for循环嵌套顺序是无所谓的！**
+
+因为dp[j] 是根据 下标j之前所对应的dp[j]计算出来的。 只要保证下标j之前的dp[j]都是经过计算的就可以了。
+
+**但是，如果是完全背包的变体的话，如下：**
+
+**如果求组合数就是外层for循环遍历物品，内层for遍历背包**。
+
+**如果求排列数就是外层for遍历背包，内层for循环遍历物品，强调物品的顺序**。
+
+## [518. 零钱兑换 II](https://leetcode.cn/problems/coin-change-ii/)
+
+这道题和[494. 目标和](https://leetcode.cn/problems/target-sum/)一样是组合问题，也就是**dp[j] 表示：填满j（包括j）这么大容积的包，有dp[j]种方法**
+
+剩余的按背包问题做就可以了。
+
+在力扣里中间int越界了，vector改成unsigned long long即可通过。
+
+```c++
+class Solution {
+	public:
+		int change(int amount, vector<int>& coins) {
+			vector<unsigned long long> dp(amount + 1, 0);
+			dp[0] = 1;
+			for (int i = 0; i < coins.size(); i++) {
+				for (int j = 0; j <= amount; j++) {
+					if (j >= coins[i]) dp[j] += dp[j - coins[i]];
+				}
+			}
+			return dp[amount];
+		}
+};
+```
+
+## [377. 组合总和 Ⅳ](https://leetcode.cn/problems/combination-sum-iv/)
+
+**如果本题要把排列都列出来的话，只能使用回溯算法爆搜**。
+
+**如果求组合数就是外层for循环遍历物品，内层for遍历背包**。
+
+**如果求排列数就是外层for遍历背包，内层for循环遍历物品**。
+
+如果把遍历nums（物品）放在外循环，遍历target的作为内循环的话，举一个例子：计算dp[4]的时候，结果集只有 {1,3} 这样的集合，不会有{3,1}这样的集合，因为nums遍历放在外层，3只能出现在1后面！
+
+所以本题遍历顺序最终遍历顺序：**target（背包）放在外循环，将nums（物品）放在内循环，内循环从前到后遍历**。
+
+```c++
+class Solution {
+public:
+    int combinationSum4(vector<int>& nums, int target) {
+        vector<unsigned long long> dp(target + 1, 0);
+        dp[0] = 1;
+        for (int i = 0; i <= target; i++) {
+            for (int j = 0; j < nums.size(); j++) {
+                if (i >= nums[j]) {
+                    dp[i] += dp[i - nums[j]];
+                }
+            }
+        }
+        return dp[target];
+    }
+};
+```
+
+## [卡码网：57. 爬楼梯](https://kamacoder.com/problempage.php?pid=1067)
+
+同上。实际上，你回去看[[70. 爬楼梯](https://leetcode.cn/problems/climbing-stairs/)](https://kamacoder.com/problempage.php?pid=1067)，就会发现这道题（完全背包+组合）就是之前那道题的每次能爬m次的进化版。
+
+## [322. 零钱兑换](https://leetcode.cn/problems/coin-change/)
+
+题目中说每种硬币的数量是无限的，可以看出是典型的完全背包问题。
+
+**dp[j]：凑足总额为j所需钱币的最少个数为dp[j]**
+
+**递推公式：dp[j] = min(dp[j - coins[i]] + 1, dp[j]);**
+
+**初始化：**
+
+首先凑足总金额为0所需钱币的个数一定是0，那么dp[0] = 0;
+
+考虑到**递推公式的特性，dp[j]必须初始化为一个最大的数**，否则就会在min(dp[j - coins[i]] + 1, dp[j])比较的过程中被初始值覆盖。
+
+所以下标非0的元素都是应该是最大值。
+
+**本题的两个for循环的关系是：外层for循环遍历物品，内层for遍历背包或者外层for遍历背包，内层for循环遍历物品都是可以的！**
+
+```c++
+// 版本一
+class Solution {
+public:
+    int coinChange(vector<int>& coins, int amount) {
+        vector<int> dp(amount + 1, INT_MAX);
+        dp[0] = 0;
+        for (int i = 0; i < coins.size(); i++) { // 遍历物品
+            for (int j = coins[i]; j <= amount; j++) { // 遍历背包
+                if (dp[j - coins[i]] != INT_MAX) { // 如果dp[j - coins[i]]是初始值则跳过
+                    dp[j] = min(dp[j - coins[i]] + 1, dp[j]);
+                }
+            }
+        }
+        if (dp[amount] == INT_MAX) return -1;
+        return dp[amount];
+    }
+};
+```
+
+## [279. 完全平方数](https://leetcode.cn/problems/perfect-squares/)
+
+和上一题一样，只是要自己造物品数组。
+
+## [139. 单词拆分](https://leetcode.cn/problems/word-break/)
+
+第一眼看上去就是回溯：
+
+```c++
+class Solution {
+	public:
+		bool backtracking(string& s, vector<string>& wordDict, int startidx) {
+			if (startidx >= s.size()) return true;
+			bool tmp = false;
+			for (int i = 0; i < wordDict.size(); i++) {
+				if (s.substr(startidx, wordDict[i].size()) == wordDict[i]) {
+					tmp = tmp || backtracking(s, wordDict, startidx + wordDict[i].size());
+				}
+			}
+			return (false || tmp);
+		}
+
+		bool wordBreak(string s, vector<string>& wordDict) {
+			return backtracking(s, wordDict, 0);
+		}
+};
+```
+
+然后超时了，似乎可以想办法用数组保存递归中的计算结果，然后ac
+
+**标答：**
+
+题目中写有可以使用无限次，就要想到完全背包。
+
+**dp[i] : 字符串长度为i的话，dp[i]为true，表示可以拆分为一个或多个在字典中出现的单词**。
+
+**if([j, i] 这个区间的子串出现在字典里 && dp[j]是true) 那么 dp[i] = true。**
+
+**dp[0]初始为true，下标非0的dp[i]初始化为false，只要没有被覆盖说明都是不可拆分为一个或多个在字典中出现的单词。**
+
+拿 s = "applepenapple", wordDict = ["apple", "pen"] 举例。
+
+"apple", "pen" 是物品，那么我们要求 物品的组合一定是 "apple" + "pen" + "apple" 才能组成 "applepenapple"。
+
+"apple" + "apple" + "pen" 或者 "pen" + "apple" + "apple" 是不可以的，那么我们就是强调物品之间顺序。
+
+所以说，本题一定是 **先遍历 背包，再遍历物品**。
+
+```c++
+class Solution {
+public:
+    bool wordBreak(string s, vector<string>& wordDict) {
+        unordered_set<string> wordSet(wordDict.begin(), wordDict.end());
+        vector<bool> dp(s.size() + 1, false);
+        dp[0] = true;
+        for (int i = 1; i <= s.size(); i++) {   // 遍历背包
+            for (int j = 0; j < i; j++) {       // 遍历物品
+                string word = s.substr(j, i - j); //substr(起始位置，截取的个数)
+                if (wordSet.find(word) != wordSet.end() && dp[j]) {
+                    dp[i] = true;
+                }
+            }
+        }
+        return dp[s.size()];
+    }
+};
+```
+
