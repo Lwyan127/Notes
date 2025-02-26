@@ -1700,6 +1700,20 @@ find(a.begin(), a.end(), 10);  // 在a中的从a.begin()（包括它）到a.end(
 // 这里最后一个位置是const _Tp& _val，貌似不能是比如vector<int>这样的复杂元素
 ```
 
+## size与capacity
+
+**首先vector的底层实现也是普通数组**。
+
+size就是我们平时用来遍历vector时候用的。
+
+而capicity是vector底层数组（就是普通数组）的大小，capicity可不一定就是size。
+
+当insert数据的时候，如果已经大于capicity，capicity会成倍扩容，但对外暴漏的size其实仅仅是+1。
+
+那么既然vector底层实现是普通数组，怎么**扩容**的？
+
+**就是重新申请一个二倍于原数组大小的数组，然后把数据都拷贝过去，并释放原数组内存。因此数组内存的起始地址已经改变了。**
+
 https://blog.csdn.net/wkq0825/article/details/82255984
 
 https://blog.csdn.net/230176366823/article/details/128876930 **这里面包含了迭代器失效的问题**
@@ -1708,7 +1722,7 @@ https://blog.csdn.net/2301_76366823/article/details/128876930
 
 https://blog.csdn.net/m0_57298796/article/details/123952640
 
-
+https://github.com/Lwyan127/leetcode-master/blob/master/problems/%E6%A0%B9%E6%8D%AE%E8%BA%AB%E9%AB%98%E9%87%8D%E5%BB%BA%E9%98%9F%E5%88%97%EF%BC%88vector%E5%8E%9F%E7%90%86%E8%AE%B2%E8%A7%A3%EF%BC%89.md
 
 # 迭代器
 
@@ -2559,7 +2573,7 @@ https://zhuanlan.zhihu.com/p/482540092
 
 
 
-# 队列和栈（STL）
+# STL
 
 ## stack
 
@@ -2865,6 +2879,32 @@ int main() {
 > 2 3
 > 1 3
 > 1 2
+
+## list双向链表
+
+| 构造函数 (constructor)                                   | 接口说明                            |
+| -------------------------------------------------------- | ----------------------------------- |
+| list (size_type n, const value_type& val = value_type()) | 构造的list中包含n个值为val的元素    |
+| list()                                                   | 构造空的list                        |
+| list (const list& x)                                     | 拷贝构造函数                        |
+| list (InputIterator first, InputIterator last)           | 用[first, last)区间中的元素构造list |
+
+| **函数声明**   | 接口说明                                    |
+| -------------- | ------------------------------------------- |
+| **empty**      | 检测list是否为空，是返回true，否则返回false |
+| **size**       | 返回list中有效节点的个数                    |
+| **front**      | 返回list的第一个节点中值的引用              |
+| **back**       | 返回list的最后一个节点中值的引用            |
+| **push_front** | 在list首元素前插入值为val的元素             |
+| **pop_front**  | 删除list中第一个元素                        |
+| **push_back**  | 在list尾部插入值为val的元素                 |
+| **pop_back**   | 删除list中最后一个元素                      |
+| **insert**     | 在list position位置中插入值为val的元素      |
+| **erase**      | 删除list position位置的元素                 |
+| **swap**       | 交换两个list中的元素                        |
+| **clear**      | 清空list中的有效元素                        |
+
+
 
 # 关于auto使用
 
