@@ -4205,3 +4205,120 @@ public:
 };
 ```
 
+## 多重背包
+
+有N种物品和一个容量为V 的背包。第i种物品最多有Mi件可用，每件耗费的空间是Ci ，价值是Wi 。求解将哪些物品装入背包可使这些物品的耗费的空间 总和不超过背包容量，且价值总和最大。
+
+多重背包和01背包是非常像的， 为什么和01背包像呢？
+
+**每件物品最多有Mi件可用，把Mi件摊开，其实就是一个01背包问题了。**
+
+如果物品数量很多的话，C++中，这种操作十分费时，主要消耗在vector的动态底层扩容上。（其实这里也可以优化，先把 所有物品数量都计算好，一起申请vector的空间。）
+
+这里也有另一种实现方式，就是把每种商品遍历的个数放在01背包里面在遍历一遍。
+
+[56.携带矿石资源（第八期模拟笔试）](https://kamacoder.com/problempage.php?pid=1066)
+
+```c++
+#include<iostream>
+#include<vector>
+using namespace std;
+int main() {
+    int bagWeight,n;
+    cin >> bagWeight >> n;
+    vector<int> weight(n, 0);
+    vector<int> value(n, 0);
+    vector<int> nums(n, 0);
+    for (int i = 0; i < n; i++) cin >> weight[i];
+    for (int i = 0; i < n; i++) cin >> value[i];
+    for (int i = 0; i < n; i++) cin >> nums[i];
+
+    vector<int> dp(bagWeight + 1, 0);
+
+    for(int i = 0; i < n; i++) { // 遍历物品
+        for(int j = bagWeight; j >= weight[i]; j--) { // 遍历背包容量
+            // 以上为01背包，然后加一个遍历个数
+            for (int k = 1; k <= nums[i] && (j - k * weight[i]) >= 0; k++) { // 遍历个数
+                dp[j] = max(dp[j], dp[j - k * weight[i]] + k * value[i]);
+            }
+        }
+    }
+
+    cout << dp[bagWeight] << endl;
+}
+```
+
+## [198. 打家劫舍](https://leetcode.cn/problems/house-robber/)
+
+简单。
+
+递归方程：`dp[i] = max(dp[i - 1], dp[i - 2] + nums[i]);`
+
+初始化：dp[0] 一定是 nums[0]，dp[1]就是nums[0]和nums[1]的最大值即：dp[1] = max(nums[0], nums[1]);
+
+```c++
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        if (nums.size() == 0) return 0;
+        if (nums.size() == 1) return nums[0];
+        vector<int> dp(nums.size());
+        dp[0] = nums[0];
+        dp[1] = max(nums[0], nums[1]);
+        for (int i = 2; i < nums.size(); i++) {
+            dp[i] = max(dp[i - 2] + nums[i], dp[i - 1]);
+        }
+        return dp[nums.size() - 1];
+    }
+};
+```
+
+## [213. 打家劫舍 II](https://leetcode.cn/problems/house-robber-ii/)
+
+如果考虑成环的话，就按如下分情况：
+
+- 情况一：考虑不包含首尾元素
+
+![image-20250227182307215](leetcode-master.assets/image-20250227182307215.png)
+
+- 情况二：考虑包含首元素，不包含尾元素
+
+![image-20250227182325436](leetcode-master.assets/image-20250227182325436.png)
+
+- 情况三：考虑包含尾元素，不包含首元素
+
+![image-20250227182359968](leetcode-master.assets/image-20250227182359968.png)
+
+**注意我这里用的是"考虑"**，例如情况三，虽然是考虑包含尾元素，但不一定要选尾部元素！ 对于情况三，取nums[1] 和 nums[3]就是最大的。
+
+大家会有这样的困惑：情况三怎么就包含了情况一了呢？ 本文图中最后一间房不能偷啊，偷了一定不是最优结果。
+
+所以我在本文重点强调了情况一二三是“考虑”的范围，而具体房间偷与不偷交给递推公式去抉择。
+
+**而情况二 和 情况三 都包含了情况一了，所以只考虑情况二和情况三就可以了**。
+
+```c++
+// 注意注释中的情况二情况三，以及把198.打家劫舍的代码抽离出来了
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        if (nums.size() == 0) return 0;
+        if (nums.size() == 1) return nums[0];
+        int result1 = robRange(nums, 0, nums.size() - 2); // 情况二
+        int result2 = robRange(nums, 1, nums.size() - 1); // 情况三
+        return max(result1, result2);
+    }
+    // 198.打家劫舍的逻辑
+    int robRange(vector<int>& nums, int start, int end) {
+        if (end == start) return nums[start];
+        vector<int> dp(nums.size());
+        dp[start] = nums[start];
+        dp[start + 1] = max(nums[start], nums[start + 1]);
+        for (int i = start + 2; i <= end; i++) {
+            dp[i] = max(dp[i - 2] + nums[i], dp[i - 1]);
+        }
+        return dp[end];
+    }
+};
+```
+
