@@ -441,6 +441,10 @@ int KMP(string a, string b, int next[]) {
 }
 ```
 
+**综上，写代码按照下面这个分支写：**
+
+![image-20250228104312725](algorithm.assets/image-20250228104312725.png)
+
 ## 求字符串前i个字符的公共前后缀数量
 
 - 求$num[i]$数组为字符串前i个字符的公共前后缀数量

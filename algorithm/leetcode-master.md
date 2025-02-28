@@ -4322,3 +4322,105 @@ public:
 };
 ```
 
+# 图论
+
+## 深度优先搜索dfs
+
+```c++
+void dfs(参数) {
+    if (终止条件) {
+        存放结果;
+        return;
+    }
+
+    for (选择：本节点所连接的其他节点) {
+        处理节点;
+        dfs(图，选择的节点); // 递归
+        回溯，撤销处理结果
+    }
+}
+```
+
+## [797. 所有可能的路径](https://leetcode.cn/problems/all-paths-from-source-to-target/)
+
+最简单的dfs
+
+```c++
+class Solution {
+	public:
+		vector<vector<int>> ans;
+
+		void dfs(vector<vector<int>>& graph, int node, vector<int>& path) {
+			if (node == graph.size() - 1) {
+				ans.emplace_back(path);
+			}
+
+			for (int i = 0; i < graph[node].size(); i++) {
+				path.emplace_back(graph[node][i]);
+				dfs(graph, graph[node][i], path);
+				path.pop_back();
+			}
+			return;
+		}
+
+		vector<vector<int>> allPathsSourceTarget(vector<vector<int>>& graph) {
+			vector<int> path {0};
+			dfs(graph, 0, path);
+			return ans;
+		}
+};
+```
+
+## 广度优先搜索bfs
+
+![image-20250228120250559](leetcode-master.assets/image-20250228120250559.png)
+
+```c++
+int dir[4][2] = {0, 1, 1, 0, -1, 0, 0, -1}; // 表示四个方向
+// grid 是地图，也就是一个二维数组
+// visited标记访问过的节点，不要重复访问
+// x,y 表示开始搜索节点的下标
+void bfs(vector<vector<char>>& grid, vector<vector<bool>>& visited, int x, int y) {
+    queue<pair<int, int>> que; // 定义队列
+    que.push({x, y}); // 起始节点加入队列
+    visited[x][y] = true; // 只要加入队列，立刻标记为访问过的节点
+    while(!que.empty()) { // 开始遍历队列里的元素
+        pair<int ,int> cur = que.front(); que.pop(); // 从队列取元素
+        int curx = cur.first;
+        int cury = cur.second; // 当前节点坐标
+        for (int i = 0; i < 4; i++) { // 开始想当前节点的四个方向左右上下去遍历
+            int nextx = curx + dir[i][0];
+            int nexty = cury + dir[i][1]; // 获取周边四个方向的坐标
+            if (nextx < 0 || nextx >= grid.size() || nexty < 0 || nexty >= grid[0].size()) continue;  // 坐标越界了，直接跳过
+            if (!visited[nextx][nexty]) { // 如果节点没被访问过
+                que.push({nextx, nexty});  // 队列添加该节点为下一轮要遍历的节点
+                visited[nextx][nexty] = true; // 只要加入队列立刻标记，避免重复访问
+            }
+        }
+    }
+}
+```
+
+## [200. 岛屿数量](https://leetcode.cn/problems/number-of-islands/)
+
+就是使用dfs和bfs的模板即可。
+
+注意的问题：当直接stack overflow时，注意有没有**判断边界条件**
+
+## [695. 岛屿的最大面积](https://leetcode.cn/problems/max-area-of-island/)
+
+在上一题的基础上加个cnt即可。
+
+## [1020. 飞地的数量](https://leetcode.cn/problems/number-of-enclaves/)
+
+在上两题的基础上修改即可。
+
+做这道题遇到了一个有意思的问题：`flag = flag || dfs(grid, x + dx[i], y + dy[i]);`
+
+在执行这个语句的时候，如果flag已经是true了，那么dfs函数就不会被调用，需要注意这一点。
+
+同理，在判断边界和地块的时候`if (x < 0 || x >= grid.size() || y < 0 || y >= grid[0].size() || grid[x][y] != 1) return;`也是使用了这个特性，不然`grid[x][y] != 1`中的xy已经出了边界，会报错
+
+## [130. 被围绕的区域](https://leetcode.cn/problems/surrounded-regions/)
+
+和上一题类似，只不过先判断一下是否被环绕，再修改矩阵。
