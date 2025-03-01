@@ -456,7 +456,33 @@ typedef只是给你的数据类型定义一个别名，不过使用typedef将能
 
 https://blog.csdn.net/WalterBrien/article/details/126141547
 
+```c++
+//代码1（c语言）
+typedef struct test3{
+	int a;
+	int b;
+	int c;
+}test4;
+//代码2（c++）
+struct test3{
+	int a;
+	int b;
+	int c;
+}test4;
+```
 
+- **在c语言中**
+  - **`typedef` 的作用**：在 C 语言里，`typedef` 关键字用于为已有的数据类型创建一个新的类型别名。在这段代码中，`typedef` 为 `struct test3` 这个结构体类型定义了一个新的名称 `test4`。
+  - 类型使用方式：
+    - 若要声明 `struct test3` 类型的变量，有两种方式。一是使用完整的结构体类型名，如 `struct test3 var1;`；二是使用 `typedef` 定义的别名，如 `test4 var2;`。
+    - 这里 `test4` 就相当于 `struct test3` 的别名，可直接用于变量声明，而无需每次都写 `struct` 关键字。
+- **在c++中**
+  - **无 `typedef` 的情况**：在 C++ 中，结构体类型的使用更为简洁。当定义结构体时，若不使用 `typedef`，`struct` 关键字后面的标识符（如 `test3`）本身就直接成为了一个可用的类型名。
+  - 类型使用方式：
+    - 可以直接使用 `test3` 来声明变量，例如 `test3 var3;`。
+    - 代码中的 `test4` 实际上是一个 `struct test3` 类型的变量实例，而非类型别名。这和 C 语言中使用 `typedef` 定义别名的效果是不同的。
+
+https://github.com/guaguaupup/cpp_interview/blob/main/C%2B%2B.md
 
 # 结构体使用malloc
 
