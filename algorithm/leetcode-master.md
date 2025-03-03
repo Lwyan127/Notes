@@ -4322,6 +4322,49 @@ public:
 };
 ```
 
+## [337. 打家劫舍 III](https://leetcode.cn/problems/house-robber-iii/)
+
+dp数组（dp table）以及下标的含义：下标为0记录不偷该节点所得到的的最大金钱，下标为1记录偷该节点所得到的的最大金钱。
+
+**所以本题dp数组就是一个长度为2的数组！**
+
+那么有同学可能疑惑，长度为2的数组怎么标记树中每个节点的状态呢？
+
+**别忘了在递归的过程中，系统栈会保存每一层递归的参数**。
+
+如果还不理解的话，就接着往下看，看到代码就理解了哈。
+
+如果是偷当前节点，那么左右孩子就不能偷，val1 = cur->val + left[0] + right[0]; （**如果对下标含义不理解就再回顾一下dp数组的含义**）
+
+如果不偷当前节点，那么左右孩子就可以偷，至于到底偷不偷一定是选一个最大的，所以：val2 = max(left[0], left[1]) + max(right[0], right[1]);
+
+最后当前节点的状态就是{val2, val1}; 即：{不偷当前节点得到的最大金钱，偷当前节点得到的最大金钱}
+
+```c++
+class Solution {
+public:
+    int rob(TreeNode* root) {
+        vector<int> result = robTree(root);
+        return max(result[0], result[1]);
+    }
+    // 长度为2的数组，0：不偷，1：偷
+    vector<int> robTree(TreeNode* cur) {
+        if (cur == NULL) return vector<int>{0, 0};
+        vector<int> left = robTree(cur->left);
+        vector<int> right = robTree(cur->right);
+        // 偷cur，那么就不能偷左右节点。
+        int val1 = cur->val + left[0] + right[0];
+        // 不偷cur，那么可以偷也可以不偷左右节点，则取较大的情况
+        int val2 = max(left[0], left[1]) + max(right[0], right[1]);
+        return {val2, val1};
+    }
+};
+```
+
+## [121. 买卖股票的最佳时机](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/)
+
+很简单， 贪心比动规好用。
+
 # 图论
 
 ## 深度优先搜索dfs
@@ -4424,3 +4467,152 @@ void bfs(vector<vector<char>>& grid, vector<vector<bool>>& visited, int x, int y
 ## [130. 被围绕的区域](https://leetcode.cn/problems/surrounded-regions/)
 
 和上一题类似，只不过先判断一下是否被环绕，再修改矩阵。
+
+## [417. 太平洋大西洋水流问题](https://leetcode.cn/problems/pacific-atlantic-water-flow/)
+
+从高到低能流水到海里，但是有两个不同的海，对于最后到的位置标记还要做很多判断，麻烦。
+
+可以逆向思维，从海出发，从低到高标记能到海的格子。
+
+```c++
+class Solution {
+private:
+    int dir[4][2] = {-1, 0, 0, -1, 1, 0, 0, 1};
+    void dfs(vector<vector<int>>& heights, vector<vector<bool>>& visited, int x, int y) {
+        if (visited[x][y]) return;
+
+        visited[x][y] = true;
+
+        for (int i = 0; i < 4; i++) {
+            int nextx = x + dir[i][0];
+            int nexty = y + dir[i][1];
+            if (nextx < 0 || nextx >= heights.size() || nexty < 0 || nexty >= heights[0].size()) continue;
+            if (heights[x][y] < heights[nextx][nexty]) continue; // 高度不合适
+
+            dfs (heights, visited, nextx, nexty);
+        }
+        return;
+    }
+    bool isResult(vector<vector<int>>& heights, int x, int y) {
+        vector<vector<bool>> visited = vector<vector<bool>>(heights.size(), vector<bool>(heights[0].size(), false));
+
+        // 深搜，将x,y出发 能到的节点都标记上。 
+        dfs(heights, visited, x, y);
+        bool isPacific = false;
+        bool isAtlantic = false;
+
+        // 以下就是判断x，y出发，是否到达太平洋和大西洋 
+        for (int j = 0; j < heights[0].size(); j++) {
+            if (visited[0][j]) {
+                isPacific = true;
+                break;
+            }
+        }
+        for (int i = 0; i < heights.size(); i++) {
+            if (visited[i][0]) {
+                isPacific = true;
+                break;
+            }
+        }
+        for (int j = 0; j < heights[0].size(); j++) {
+            if (visited[heights.size() - 1][j]) {
+                isAtlantic = true;
+                break;
+            }
+        }
+        for (int i = 0; i < heights.size(); i++) {
+            if (visited[i][heights[0].size() - 1]) {
+                isAtlantic = true;
+                break;
+            }
+        }
+        if (isAtlantic && isPacific) return true;
+        return false;
+    }
+public:
+
+    vector<vector<int>> pacificAtlantic(vector<vector<int>>& heights) {
+        vector<vector<int>> result;
+        // 遍历每一个点，看是否能同时到达太平洋和大西洋 
+        for (int i = 0; i < heights.size(); i++) {
+            for (int j = 0; j < heights[0].size(); j++) {
+                if (isResult(heights, i, j)) result.push_back({i, j});
+            }
+        }
+        return result;
+    }
+};
+```
+
+## [827. 最大人工岛](https://leetcode.cn/problems/making-a-large-island/)
+
+先遍历整个地图，用dfs记录所有的岛和其大小，岛屿2面积为7使用unordered_map记录，如下：
+
+![image-20250302175335427](leetcode-master.assets/image-20250302175335427.png)
+
+然后再遍历每个为0的格子，统计与其相邻的岛屿的面积之和，如果有两个相邻格子在同一岛屿，则需要用unordered_map去重，最后取一个最大值即可。
+
+```c++
+class Solution {
+private:
+    int count;
+    int dir[4][2] = {0, 1, 1, 0, -1, 0, 0, -1}; // 四个方向
+    void dfs(vector<vector<int>>& grid, vector<vector<bool>>& visited, int x, int y, int mark) {
+        if (visited[x][y] || grid[x][y] == 0) return; // 终止条件：访问过的节点 或者 遇到海水
+        visited[x][y] = true; // 标记访问过
+        grid[x][y] = mark; // 给陆地标记新标签
+        count++;
+        for (int i = 0; i < 4; i++) {
+            int nextx = x + dir[i][0];
+            int nexty = y + dir[i][1];
+            if (nextx < 0 || nextx >= grid.size() || nexty < 0 || nexty >= grid[0].size()) continue;  // 越界了，直接跳过
+            dfs(grid, visited, nextx, nexty, mark);
+        }
+    }
+
+public:
+    int largestIsland(vector<vector<int>>& grid) {
+        int n = grid.size(), m = grid[0].size();
+        vector<vector<bool>> visited = vector<vector<bool>>(n, vector<bool>(m, false)); // 标记访问过的点
+        unordered_map<int ,int> gridNum;
+        int mark = 2; // 记录每个岛屿的编号
+        bool isAllGrid = true; // 标记是否整个地图都是陆地
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                if (grid[i][j] == 0) isAllGrid = false;
+                if (!visited[i][j] && grid[i][j] == 1) {
+                    count = 0;
+                    dfs(grid, visited, i, j, mark); // 将与其链接的陆地都标记上 true
+                    gridNum[mark] = count; // 记录每一个岛屿的面积
+                    mark++; // 记录下一个岛屿编号
+                }
+            }
+        }
+        if (isAllGrid) return n * m; // 如果都是陆地，返回全面积
+
+        // 以下逻辑是根据添加陆地的位置，计算周边岛屿面积之和
+        int result = 0; // 记录最后结果
+        unordered_set<int> visitedGrid; // 标记访问过的岛屿
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                int count = 1; // 记录连接之后的岛屿数量
+                visitedGrid.clear(); // 每次使用时，清空
+                if (grid[i][j] == 0) {
+                    for (int k = 0; k < 4; k++) {
+                        int neari = i + dir[k][1]; // 计算相邻坐标
+                        int nearj = j + dir[k][0];
+                        if (neari < 0 || neari >= grid.size() || nearj < 0 || nearj >= grid[0].size()) continue;
+                        if (visitedGrid.count(grid[neari][nearj])) continue; // 添加过的岛屿不要重复添加
+                        // 把相邻四面的岛屿数量加起来
+                        count += gridNum[grid[neari][nearj]];
+                        visitedGrid.insert(grid[neari][nearj]); // 标记该岛屿已经添加过
+                    }
+                }
+                result = max(result, count);
+            }
+        }
+        return result;
+    }
+};
+```
+
