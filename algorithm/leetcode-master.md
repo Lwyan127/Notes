@@ -4616,3 +4616,251 @@ public:
 };
 ```
 
+## [127. 单词接龙](https://leetcode.cn/problems/word-ladder/)
+
+这道题如下图所示，相当于找最短路径，因此需要的是bfs，如果使用dfs需要整个图遍历一遍，而bfs一旦找到最终答案即可打断返回，因此使用bfs
+
+![image-20250304145229880](leetcode-master.assets/image-20250304145229880.png)
+
+**注意：使用unordered_map来记录每个string已经改变的次数（也就是路径长度）**
+
+标答中是每次对当前的单词的每一位进行26个字母的替代，然后将原本的wordlist存到哈希表里找存不存在。需要26*单词长度个循环次数。
+
+也可以每次直接在wordlist里找相差一个字母的单词，但为了防止曾经找到过又去找形成死循环，因此需要用一个数组mark一下。需要wordlist长度*单词长度个循环次数。
+
+两个方法时间复杂度还是标答好一点。
+
+```c++
+class Solution {
+public:
+    int ladderLength(string beginWord, string endWord, vector<string>& wordList) {
+        // 将vector转成unordered_set，提高查询速度
+        unordered_set<string> wordSet(wordList.begin(), wordList.end());
+        // 如果endWord没有在wordSet出现，直接返回0
+        if (wordSet.find(endWord) == wordSet.end()) return 0;
+        // 记录word是否访问过
+        unordered_map<string, int> visitMap; // <word, 查询到这个word路径长度>
+        // 初始化队列
+        queue<string> que;
+        que.push(beginWord);
+        // 初始化visitMap
+        visitMap.insert(pair<string, int>(beginWord, 1));
+
+        while(!que.empty()) {
+            string word = que.front();
+            que.pop();
+            int path = visitMap[word]; // 这个word的路径长度
+            for (int i = 0; i < word.size(); i++) {
+                string newWord = word; // 用一个新单词替换word，因为每次置换一个字母
+                for (int j = 0 ; j < 26; j++) {
+                    newWord[i] = j + 'a';
+                    if (newWord == endWord) return path + 1; // 找到了end，返回path+1
+                    // wordSet出现了newWord，并且newWord没有被访问过
+                    if (wordSet.find(newWord) != wordSet.end()
+                            && visitMap.find(newWord) == visitMap.end()) {
+                        // 添加访问信息
+                        visitMap.insert(pair<string, int>(newWord, path + 1));
+                        que.push(newWord);
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+};
+```
+
+## [841. 钥匙和房间](https://leetcode.cn/problems/keys-and-rooms/)
+
+简单的dfs或者bfs
+
+## [463. 岛屿的周长](https://leetcode.cn/problems/island-perimeter/)
+
+简单的dfs或者bfs
+
+## 并查集
+
+并查集常用来解决**连通性**问题。
+
+并查集主要有两个功能：
+
+- 将两个元素添加到一个集合中。
+- 判断两个元素在不在同一个集合
+
+```c++
+// 将v，u 这条边加入并查集
+void join(int u, int v) {
+    u = find(u); // 寻找u的根
+    v = find(v); // 寻找v的根
+    if (u == v) return; // 如果发现根相同，则说明在一个集合，不用两个节点相连直接返回
+    father[v] = u;
+}
+```
+
+```c++
+// 并查集里寻根的过程
+int find(int u) {
+    if (u == father[u]) return u;
+    return father[u] = find(father[u]); // 路径压缩
+}
+```
+
+## [1971. 寻找图中是否存在路径](https://leetcode.cn/problems/find-if-path-exists-in-graph/)
+
+简单使用并查集即可。
+
+## [684. 冗余连接](https://leetcode.cn/problems/redundant-connection/)
+
+**无向图，给了所有边，判断哪些点在环上：使用并查集。如果新的边的两个端点都已经在同一集合中，说明这条边会导致成一个环。**
+
+```c++
+class Solution {
+private:
+    int n = 1005; // 节点数量3 到 1000
+    vector<int> father = vector<int> (n, 0); // C++里的一种数组结构
+
+    // 并查集初始化
+    void init() {
+        for (int i = 0; i < n; ++i) {
+            father[i] = i;
+        }
+    }
+    // 并查集里寻根的过程
+    int find(int u) {
+        return u == father[u] ? u : father[u] = find(father[u]);
+    }
+    // 判断 u 和 v是否找到同一个根
+    bool isSame(int u, int v) {
+        u = find(u);
+        v = find(v);
+        return u == v;
+    }
+    // 将v->u 这条边加入并查集
+    void join(int u, int v) {
+        u = find(u); // 寻找u的根
+        v = find(v); // 寻找v的根
+        if (u == v) return ; // 如果发现根相同，则说明在一个集合，不用两个节点相连直接返回
+        father[v] = u;
+}
+public:
+    vector<int> findRedundantConnection(vector<vector<int>>& edges) {
+        init();
+        for (int i = 0; i < edges.size(); i++) {
+            if (isSame(edges[i][0], edges[i][1])) return edges[i];
+            else join(edges[i][0], edges[i][1]);
+        }
+        return {};
+    }
+};
+
+```
+
+## [685. 冗余连接 II](https://leetcode.cn/problems/redundant-connection-ii/)
+
+去掉我们需要选择的这条边后就变成了一颗树，因此应该从一棵树上加一条边来观察当前的图应该是什么样子。
+
+如下应该有三种情况：
+
+1. 存在入度为2的点且成有向环
+
+   ![image-20250304170823267](leetcode-master.assets/image-20250304170823267.png)
+
+2. 存在入度为2的点且不成有向环
+
+   ![image-20250304171027902](leetcode-master.assets/image-20250304171027902.png)
+
+3. 没有入度为2的点且成有向环
+
+   ![image-20250304171036136](leetcode-master.assets/image-20250304171036136.png)
+
+因此，先统计入度。
+
+如果存在入度为2的点（情况1和2），则去掉一条指向该点的边，看剩余的点是否是一棵树，此时不是一棵树的唯一可能就是情况3，两条边都可以的话就按题目意思选输入中后面的边。
+
+如果不存在入度为2的点（情况3），则去掉一条在这条环上的任意一条边，剩下来一定是一棵树。
+
+```c++
+class Solution {
+private:
+    static const int N = 1010; // 如题：二维数组大小的在3到1000范围内
+    int father[N];
+    int n; // 边的数量
+    // 并查集初始化
+    void init() {
+        for (int i = 1; i <= n; ++i) {
+            father[i] = i;
+        }
+    }
+    // 并查集里寻根的过程
+    int find(int u) {
+        return u == father[u] ? u : father[u] = find(father[u]);
+    }
+    // 将v->u 这条边加入并查集
+    void join(int u, int v) {
+        u = find(u);
+        v = find(v);
+        if (u == v) return ;
+        father[v] = u;
+    }
+    // 判断 u 和 v是否找到同一个根
+    bool same(int u, int v) {
+        u = find(u);
+        v = find(v);
+        return u == v;
+    }
+    // 在有向图里找到删除的那条边，使其变成树
+    vector<int> getRemoveEdge(const vector<vector<int>>& edges) {
+        init(); // 初始化并查集
+        for (int i = 0; i < n; i++) { // 遍历所有的边
+            if (same(edges[i][0], edges[i][1])) { // 构成有向环了，就是要删除的边
+                return edges[i];
+            }
+            join(edges[i][0], edges[i][1]);
+        }
+        return {};
+    }
+
+    // 删一条边之后判断是不是树
+    bool isTreeAfterRemoveEdge(const vector<vector<int>>& edges, int deleteEdge) {
+        init(); // 初始化并查集
+        for (int i = 0; i < n; i++) {
+            if (i == deleteEdge) continue;
+            if (same(edges[i][0], edges[i][1])) { // 构成有向环了，一定不是树
+                return false;
+            }
+            join(edges[i][0], edges[i][1]);
+        }
+        return true;
+    }
+public:
+
+    vector<int> findRedundantDirectedConnection(vector<vector<int>>& edges) {
+        int inDegree[N] = {0}; // 记录节点入度
+        n = edges.size(); // 边的数量
+        for (int i = 0; i < n; i++) {
+            inDegree[edges[i][1]]++; // 统计入度
+        }
+        vector<int> vec; // 记录入度为2的边（如果有的话就两条边）
+        // 找入度为2的节点所对应的边，注意要倒序，因为优先返回最后出现在二维数组中的答案
+        for (int i = n - 1; i >= 0; i--) {
+            if (inDegree[edges[i][1]] == 2) {
+                vec.push_back(i);
+            }
+        }
+        // 处理图中情况1 和 情况2
+        // 如果有入度为2的节点，那么一定是两条边里删一个，看删哪个可以构成树
+        if (vec.size() > 0) {
+            if (isTreeAfterRemoveEdge(edges, vec[0])) {
+                return edges[vec[0]];
+            } else {
+                return edges[vec[1]];
+            }
+        }
+        // 处理图中情况3
+        // 明确没有入度为2的情况，那么一定有有向环，找到构成环的边返回就可以了
+        return getRemoveEdge(edges);
+
+    }
+};
+```
+
