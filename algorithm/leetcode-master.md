@@ -1367,6 +1367,10 @@ public:
 
 - **PS：例如我们在写快排的cmp函数的时候，`return left > right` 就是从大到小，`return left < right` 就是从小到大。优先级队列的定义正好反过来了，可能和优先级队列的源码实现有关，估计是底层实现上优先队列队首指向后面，队尾指向最前面的缘故！**
 
+# 单调栈
+
+**通常是一维数组，要寻找任一个元素的右边或者左边第一个比自己大或者小的元素的位置，此时我们就要想到可以用单调栈了**。时间复杂度为O(n)。
+
 # 字符串
 
 ## [344. 反转字符串](https://leetcode.cn/problems/reverse-string/)
@@ -3826,14 +3830,14 @@ public:
 
 ![image-20250221151125259](leetcode-master.assets/image-20250221151125259.png)
 
-**dp[i] [j] 表示从下标为[0-i]的物品里任意取，放进容量为j的背包，价值总和最大是多少**
+**dp[i] [j] **表示从下标为[0-i]的物品里任意取，放进容量为j的背包，价值总和最大是多少
 
 **递推公式：**`dp[i][j] = max(dp[i - 1][j], dp[i - 1][j - weight[i]] + value[i]);`
 
 - **不放物品i**：由`dp[i - 1`][j]推出，即背包容量为j，里面不放物品i的最大价值，此时`dp[i][j]`就是`dp[i - 1`][j]。(其实就是当物品i的重量大于背包j的重量时，物品i无法放进背包中，所以背包内的价值依然和前面相同。)
 - **放物品i**：由`dp[i - 1][j - weight[i]]`推出，`dp[i - 1][j - weight[i]] `为背包容量为j - weight[i]的时候不放物品i的最大价值，那么`dp[i - 1][j - weight[i]] + value[i] `（物品i的价值），就是背包放物品i得到的最大价值
 
-**初始值：如果是二维数组静态（每个空值只会更新一次）的话，如下图所示；如果是滚动数组（根据物品数量循环，每次都更新整个数组，可能是一维也可能是二维的），全初始化为0**
+**初始值：**如果是二维数组静态（每个空值只会更新一次）的话，如下图所示；如果是滚动数组（根据物品数量循环，每次都更新整个数组，可能是一维也可能是二维的），全初始化为0
 
 ![image-20250221151446842](leetcode-master.assets/image-20250221151446842.png)
 
@@ -3933,7 +3937,7 @@ y = (sum - target) / 2
 
 **此时问题就转化为，装满容量为x的背包，有几种方法**。
 
-**dp[j] 表示：填满j（包括j）这么大容积的包，有dp[j]种方法**
+**dp[j] 表示：**填满j（包括j）这么大容积的包，有dp[j]种方法
 
 只要搞到nums[i]，凑成dp[j]就有dp[j - nums[i]] 种方法。
 
@@ -3984,11 +3988,11 @@ class Solution {
 
 本题其实是01背包问题，只不过这个背包有两个维度，一个是m 一个是n。
 
-**`dp[i][j]：最多有i个0和j个1的strs的最大子集的大小为dp[i][j]`**。这其实是一个滚动数组，但是变成二维的了。
+**`dp[i][j]：`**最多有i个0和j个1的strs的最大子集的大小为`dp[i][j]`。这其实是一个滚动数组，但是变成二维的了。
 
-**`递推公式：dp[i][j] = max(dp[i][j], dp[i - zeroNum][j - oneNum] + 1);`**
+**递推公式：**`dp[i][j] = max(dp[i][j], dp[i - zeroNum][j - oneNum] + 1);`
 
-**初始化：这种实际是滚动数组的全初始化为0即可。**
+**初始化：**这种实际是滚动数组的全初始化为0即可。
 
 ```c++
 class Solution {
@@ -4103,9 +4107,9 @@ public:
 
 题目中说每种硬币的数量是无限的，可以看出是典型的完全背包问题。
 
-**dp[j]：凑足总额为j所需钱币的最少个数为dp[j]**
+**dp[j]：**凑足总额为j所需钱币的最少个数为dp[j]
 
-**递推公式：dp[j] = min(dp[j - coins[i]] + 1, dp[j]);**
+**递推公式：**dp[j] = min(dp[j - coins[i]] + 1, dp[j]);
 
 **初始化：**
 
@@ -4171,9 +4175,9 @@ class Solution {
 
 题目中写有可以使用无限次，就要想到完全背包。
 
-**dp[i] : 字符串长度为i的话，dp[i]为true，表示可以拆分为一个或多个在字典中出现的单词**。
+**dp[i] : **字符串长度为i的话，dp[i]为true，表示可以拆分为一个或多个在字典中出现的单词。
 
-**if([j, i] 这个区间的子串出现在字典里 && dp[j]是true) 那么 dp[i] = true。**
+if([j, i] 这个区间的子串出现在字典里 && dp[j]是true) 那么 dp[i] = true。
 
 **dp[0]初始为true，下标非0的dp[i]初始化为false，只要没有被覆盖说明都是不可拆分为一个或多个在字典中出现的单词。**
 
@@ -4364,6 +4368,549 @@ public:
 ## [121. 买卖股票的最佳时机](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/)
 
 很简单， 贪心比动规好用。
+
+## [122. 买卖股票的最佳时机 II](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/)
+
+和上道题一样。
+
+## [123. 买卖股票的最佳时机 III](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iii/)
+
+只能用动规做了。
+
+一天一共就有五个状态：
+
+0.没有操作 
+
+1.第一次持有股票
+
+2.第一次不持有股票
+
+3.第二次持有股票
+
+4.第二次不持有股票
+
+需要注意：**`dp[i][1]`**，表示的是第i天，买入股票的状态，并不是说一定要第i天买入股票
+
+**递推公式：**
+
+达到`dp[i`][1]状态，有两个具体操作：
+
+- 操作一：第i天买入股票了，那么`dp[i][1] = dp[i-1][0] - prices[i]`
+- 操作二：第i天没有操作，而是沿用前一天买入的状态，即：`dp[i][1] = dp[i - 1][1]`
+
+**所以` dp[i][1] = max(dp[i-1][0] - prices[i], dp[i - 1][1]);`，这是买入的操作的递推公式**,`dp[i][3]`同理
+
+**对于卖出的操作递推公式只需要修改一个地方：`dp[i][1] = max(dp[i-1][0] + prices[i], dp[i - 1][1]);`，将prices前改成加号**
+
+**初始化：**
+
+第0天没有操作，即：`dp[0][0] = 0;`
+
+第0天做第一次买入的操作，`dp[0][1] = -prices[0];`
+
+第0天当天买入，当天卖出，所以`dp[0][2] = 0;`
+
+第0天第一次买入了，第一次卖出了，然后再买入一次（第二次买入），初始化为：`dp[0][3] = -prices[0];`
+
+同理第二次卖出初始化`dp[0][4] = 0;`
+
+然后顺序求出dp数组即可。
+
+![image-20250305133702498](leetcode-master.assets/image-20250305133702498.png)
+
+```c++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        vector<vector<int>> dp(prices.size(), vector<int>(5, 0));
+        dp[0][1] = -prices[0];
+        dp[0][3] = -prices[0];
+        for (int i = 1; i < prices.size(); i++) {
+            dp[i][1] = max(dp[i - 1][0] - prices[i], dp[i - 1][1]);
+            dp[i][2] = max(dp[i - 1][1] + prices[i], dp[i - 1][2]);
+            dp[i][3] = max(dp[i - 1][2] - prices[i], dp[i - 1][3]);
+            dp[i][4] = max(dp[i - 1][3] + prices[i], dp[i - 1][4]);
+        }
+        return dp[prices.size() - 1][4];
+    }
+};
+```
+
+## [188. 买卖股票的最佳时机 IV](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iv/)
+
+与上面一道题如出一辙，只是变成了k笔交易就需要分一下类和用循环。
+
+## [309. 买卖股票的最佳时机含冷冻期](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-cooldown/)
+
+四种状态：
+
+- 状态一：持有股票状态（今天买入股票，或者是之前就买入了股票然后没有操作，一直持有）
+- 不持有股票状态，这里就有两种卖出股票状态
+  - 状态二：保持卖出股票的状态（两天前就卖出了股票，度过一天冷冻期。或者是前一天就是该状态，一直没操作）
+  - 状态三：今天卖出股票
+- 状态四：今天为冷冻期状态，但冷冻期状态不可持续，只有一天！
+
+![image-20250305151900341](leetcode-master.assets/image-20250305151900341.png)
+
+**递推公式一定根据这张图来推：**
+
+**达到买入股票状态**（状态一）即：`dp[i][0]`，有两个具体操作：
+
+- 操作一：前一天就是持有股票状态（状态一），`dp[i][0] = dp[i - 1][0]`
+- 操作二：今天买入了，有两种情况
+  - 前一天是冷冻期（状态四）`，dp[i - 1][3] - prices[i]`
+  - 前一天是保持卖出股票的状态（状态二），`dp[i - 1][1] - prices[i]`
+
+那么`dp[i][0] = max(dp[i - 1][0], dp[i - 1][3] - prices[i], dp[i - 1][1] - prices[i]);`
+
+**达到保持卖出股票状态**（状态二）即：`dp[i][1]`，有两个具体操作：
+
+- 操作一：前一天就是状态二
+- 操作二：前一天是冷冻期（状态四）
+
+`dp[i][1] = max(dp[i - 1][1], dp[i - 1][3]);`
+
+**达到今天就卖出股票状态**（状态三），即：`dp[i][2] `，只有一个操作：
+
+昨天一定是持有股票状态（状态一），今天卖出
+
+即：`dp[i][2] = dp[i - 1][0] + prices[i];`
+
+**达到冷冻期状态**（状态四），即：dp[i][3]，只有一个操作：
+
+昨天卖出了股票（状态三）
+
+`dp[i][3] = dp[i - 1][2];`
+
+**初始化：只用`dp[0][0] = -prices[0]`即可**
+
+```c++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        if (n == 0) return 0;
+        vector<vector<int>> dp(n, vector<int>(4, 0));
+        dp[0][0] -= prices[0]; // 持股票
+        for (int i = 1; i < n; i++) {
+            dp[i][0] = max(dp[i - 1][0], max(dp[i - 1][3] - prices[i], dp[i - 1][1] - prices[i]));
+            dp[i][1] = max(dp[i - 1][1], dp[i - 1][3]);
+            dp[i][2] = dp[i - 1][0] + prices[i];
+            dp[i][3] = dp[i - 1][2];
+        }
+        return max(dp[n - 1][3], max(dp[n - 1][1], dp[n - 1][2]));
+    }
+};
+```
+
+## [714. 买卖股票的最佳时机含手续费](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/)
+
+`dp[i][0] `表示第i天持有股票所省最多现金。` dp[i][1] `表示第i天不持有股票所得最多现金
+
+如果第i天持有股票即`dp[i][0]`， 那么可以由两个状态推出来
+
+- 第i-1天就持有股票，那么就保持现状，所得现金就是昨天持有股票的所得现金 即：`dp[i - 1][0]`
+- 第i天买入股票，所得现金就是昨天不持有股票的所得现金减去 今天的股票价格 即：`dp[i - 1][1] - prices[i]`
+
+所以：`dp[i][0] = max(dp[i - 1][0], dp[i - 1][1] - prices[i]);`
+
+在来看看如果第i天不持有股票即`dp[i][1]`的情况， 依然可以由两个状态推出来
+
+- 第i-1天就不持有股票，那么就保持现状，所得现金就是昨天不持有股票的所得现金 即：`dp[i - 1`][1]
+- 第i天卖出股票，所得现金就是按照今天股票价格卖出后所得现金，**注意这里需要有手续费了**即：`dp[i - 1][0] + prices[i] - fee`
+
+所以：`dp[i][1] = max(dp[i - 1][1], dp[i - 1][0] + prices[i] - fee);`
+
+```c++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices, int fee) {
+        int n = prices.size();
+        vector<vector<int>> dp(n, vector<int>(2, 0));
+        dp[0][0] -= prices[0]; // 持股票
+        for (int i = 1; i < n; i++) {
+            dp[i][0] = max(dp[i - 1][0], dp[i - 1][1] - prices[i]);
+            dp[i][1] = max(dp[i - 1][1], dp[i - 1][0] + prices[i] - fee);
+        }
+        return max(dp[n - 1][0], dp[n - 1][1]);
+    }
+};
+```
+
+## 股票题型总结
+
+[动态规划：121.买卖股票的最佳时机](https://programmercarl.com/0121.买卖股票的最佳时机.html)：股票只能买卖一次，问最大利润。直接贪心即可。
+
+[动态规划：122.买卖股票的最佳时机II](https://programmercarl.com/0122.买卖股票的最佳时机II（动态规划）.html)：可以多次买卖股票，问最大收益。直接贪心，收集每天的正利润便可即可。或者动规，两个状态，持有股票后的最多现金，和不持有股票的最多现金，然后根据状态图来写递推式子。
+
+[动态规划：123.买卖股票的最佳时机III](https://programmercarl.com/0123.买卖股票的最佳时机III.html)：最多买卖两次，问最大收益。使用五个状态（未买，第一次买，第一次卖，第二次买，第二次卖）来动态规划。
+
+[动态规划：188.买卖股票的最佳时机IV](https://programmercarl.com/0188.买卖股票的最佳时机IV.html) ：最多买卖k笔交易，问最大收益。类似上面这个，使用2*k+1个状态。
+
+[动态规划：309.最佳买卖股票时机含冷冻期](https://programmercarl.com/0309.最佳买卖股票时机含冷冻期.html)：可以多次买卖但每次卖出有冷冻期1天。本题则可以花费为四个状态，然后根据状态图来写递推式子。
+
+[动态规划：714.买卖股票的最佳时机含手续费](https://programmercarl.com/0714.买卖股票的最佳时机含手续费（动态规划）.html) 可以多次买卖，但每次有手续费。就是用[动态规划：122.买卖股票的最佳时机II](https://programmercarl.com/0122.买卖股票的最佳时机II（动态规划）.html)的动规，只是每次有手续费而已。
+
+## [300. 最长递增子序列](https://leetcode.cn/problems/longest-increasing-subsequence/)
+
+**dp[i]**表示i之前包括i的以nums[i]结尾的最长递增子序列的长度
+
+位置i的最长升序子序列等于j从0到i-1各个位置的最长升序子序列 + 1 的最大值。
+
+所以：if (nums[i] > nums[j]) dp[i] = max(dp[i], dp[j] + 1);
+
+**注意这里不是要dp[i] 与 dp[j] + 1进行比较，而是我们要取dp[j] + 1的最大值**。
+
+就是两层循环的`O(n^2)`，不要觉得时间复杂度很大
+
+```c++
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        int ans = 0;
+        vector<int> dp(nums.size(), 1);
+        for (int i = 0; i < nums.size(); i++) {
+            for (int j = 0; j < i; j++) {
+                if (nums[i] > nums[j]) {
+                    dp[i] = max(dp[i], dp[j] + 1);
+                }
+            }
+            ans = max(ans, dp[i]);
+        }
+        return ans;
+    }
+};
+```
+
+## [674. 最长连续递增序列](https://leetcode.cn/problems/longest-continuous-increasing-subsequence/)
+
+很简单。
+
+## [718. 最长重复子数组](https://leetcode.cn/problems/maximum-length-of-repeated-subarray/)
+
+**`dp[i][j] `：**以下标i - 1为结尾的A，和以下标j - 1为结尾的B，最长重复子数组长度为`dp[i][j]`。 （特别注意： “以下标i - 1为结尾的A” 标明一定是 以A[i-1]为结尾的字符串 ）
+
+**递推公式：**当A[i - 1] 和B[j - 1]相等的时候，`dp[i][j] = dp[i - 1][j - 1] + 1;`
+
+**dp数组如何初始化：**
+
+根据`dp[i][j]`的定义，`dp[i][0] `和`dp[0][j]`其实都是没有意义的！
+
+`dp[i][0] `和`dp[0`][j]初始化为0，方便递归公式`dp[i][j] = dp[i - 1][j - 1] + 1;`。
+
+举个例子A[0]如果和B[0]相同的话，`dp[1][1] = dp[0][0] + 1`，只有`dp[0`][0]初始为0，正好符合递推公式逐步累加起来。
+
+![image-20250307171544889](leetcode-master.assets/image-20250307171544889.png)
+
+```c++
+// 版本一
+class Solution {
+public:
+    int findLength(vector<int>& nums1, vector<int>& nums2) {
+        vector<vector<int>> dp (nums1.size() + 1, vector<int>(nums2.size() + 1, 0));
+        int result = 0;
+        for (int i = 1; i <= nums1.size(); i++) {
+            for (int j = 1; j <= nums2.size(); j++) {
+                if (nums1[i - 1] == nums2[j - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                }
+                if (dp[i][j] > result) result = dp[i][j];
+            }
+        }
+        return result;
+    }
+};
+
+// 版本二 滚动数组版本
+class Solution {
+public:
+    int findLength(vector<int>& A, vector<int>& B) {
+        vector<int> dp(vector<int>(B.size() + 1, 0));
+        int result = 0;
+        for (int i = 1; i <= A.size(); i++) {
+            for (int j = B.size(); j > 0; j--) {
+                if (A[i - 1] == B[j - 1]) {
+                    dp[j] = dp[j - 1] + 1;
+                } else dp[j] = 0; // 注意这里不相等的时候要有赋0的操作
+                if (dp[j] > result) result = dp[j];
+            }
+        }
+        return result;
+    }
+};
+```
+
+## [1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/)
+
+**`dp[i][j]`：**长度为[0, i - 1]的字符串text1与长度为[0, j - 1]的字符串text2的最长公共子序列为`dp[i][j]`
+
+**递推公式：**如果text1[i - 1] 与 text2[j - 1]相同，那么找到了一个公共元素，所以`dp[i][j] = dp[i - 1][j - 1] + 1;`
+
+如果text1[i - 1] 与 text2[j - 1]不相同，那就看看text1[0, i - 2]与text2[0, j - 1]的最长公共子序列 和 text1[0, i - 1]与text2[0, j - 2]的最长公共子序列，取最大的。
+
+即：`dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);`
+
+**初始化：**统一初始为0。
+
+```c++
+class Solution {
+public:
+    int longestCommonSubsequence(string text1, string text2) {
+        vector<vector<int>> dp(text1.size() + 1, vector<int>(text2.size() + 1, 0));
+        for (int i = 1; i <= text1.size(); i++) {
+            for (int j = 1; j <= text2.size(); j++) {
+                if (text1[i - 1] == text2[j - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        return dp[text1.size()][text2.size()];
+    }
+};
+```
+
+## [1035. 不相交的线](https://leetcode.cn/problems/uncrossed-lines/)
+
+翻译一下就是上面这道题。
+
+## [583. 两个字符串的删除操作](https://leetcode.cn/problems/delete-operation-for-two-strings/)
+
+翻译一下就是[1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/)。
+
+## [53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
+
+之前用贪心做，现在用递归做。
+
+**dp[i]：**包括下标i（以nums[i]为结尾）的最大连续子序列和为dp[i]。
+
+**递推公式：**
+
+dp[i]只有两个方向可以推出来：
+
+- dp[i - 1] + nums[i]，即：nums[i]加入当前连续子序列和
+- nums[i]，即：从头开始计算当前连续子序列和
+
+一定是取最大的，所以dp[i] = max(dp[i - 1] + nums[i], nums[i]);
+
+**初始化：**dp[0] = nums[0]
+
+## [392. 判断子序列](https://leetcode.cn/problems/is-subsequence/)
+
+**`dp[i][j] `**表示以下标i-1为结尾的字符串s，和以下标j-1为结尾的字符串t，相同子序列的长度为`dp[i][j]`。
+
+在确定**递推公式**的时候，首先要考虑如下两种操作，整理如下：
+
+- if (s[i - 1] == t[j - 1])
+  - t中找到了一个字符在s中也出现了
+- if (s[i - 1] != t[j - 1])
+  - 相当于t要删除元素，继续匹配
+
+if (s[i - 1] == t[j - 1])，那么`dp[i][j] = dp[i - 1][j - 1] + 1;`，因为找到了一个相同的字符，相同子序列长度自然要在`dp[i-1][j-1]`的基础上加1（**如果不理解，在回看一下`dp[i][j]`的定义**）
+
+if (s[i - 1] != t[j - 1])，此时相当于t要删除元素，t如果把当前元素t[j - 1]删除，那么`dp[i][j] `的数值就是 看s[i - 1]与 t[j - 2]的比较结果了，即：`dp[i][j] = dp[i][j - 1];`
+
+其实这里 大家可以发现和 [1143.最长公共子序列](https://programmercarl.com/1143.最长公共子序列.html) 的递推公式基本那就是一样的，区别就是 本题 如果删元素一定是字符串t，而 1143.最长公共子序列 是两个字符串都可以删元素。
+
+![image-20250307195111088](leetcode-master.assets/image-20250307195111088.png)
+
+## [115. 不同的子序列](https://leetcode.cn/problems/distinct-subsequences/)
+
+**`dp[i][j]`：**以i-1为结尾的s子序列中出现以j-1为结尾的t的个数为`dp[i][j]`。
+
+**递推公式：**
+
+动手画一下这个二维数组就明白了。
+
+当s[i - 1] 与 t[j - 1]相等时，`dp[i][j] = dp[i - 1][j - 1] + dp[i - 1][j];`
+
+当s[i - 1] 与 t[j - 1]不相等时，`dp[i][j] = dp[i - 1][j];`
+
+**初始化：**
+
+从递推公式`dp[i][j] = dp[i - 1][j - 1] + dp[i - 1][j]; `和` dp[i][j] = dp[i - 1][j]; `中可以看出dp[i][j] 是从上方和左上方推导而来，那么` dp[i][0] `和`dp[0][j]`是一定要初始化的。
+
+![image-20250307202142725](leetcode-master.assets/image-20250307202142725.png)
+
+```c++
+class Solution {
+public:
+    int numDistinct(string s, string t) {
+        vector<vector<uint64_t>> dp(s.size() + 1, vector<uint64_t>(t.size() + 1));
+        for (int i = 0; i < s.size(); i++) dp[i][0] = 1;
+        for (int j = 1; j < t.size(); j++) dp[0][j] = 0;
+        for (int i = 1; i <= s.size(); i++) {
+            for (int j = 1; j <= t.size(); j++) {
+                if (s[i - 1] == t[j - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1] + dp[i - 1][j];
+                } else {
+                    dp[i][j] = dp[i - 1][j];
+                }
+            }
+        }
+        return dp[s.size()][t.size()];
+    }
+};
+```
+
+## [72. 编辑距离](https://leetcode.cn/problems/edit-distance/)
+
+**`dp[i][j] `**表示以下标i-1为结尾的字符串word1，和以下标j-1为结尾的字符串word2，最近编辑距离为`dp[i][j]`。
+
+**递推公式：**首先要考虑清楚编辑的几种操作，整理如下：
+
+```c++
+if (word1[i - 1] == word2[j - 1])
+    不操作
+if (word1[i - 1] != word2[j - 1])
+    增
+    删
+    换
+```
+
+`if (word1[i - 1] == word2[j - 1])` 那么说明不用任何编辑，`dp[i][j]` 就应该是 `dp[i - 1][j - 1]`，即`dp[i][j] = dp[i - 1][j - 1];`
+
+`if (word1[i - 1] != word2[j - 1])`，此时就需要编辑了，如何编辑呢？
+
+- 操作一：word1删除一个元素，那么就是以下标i - 2为结尾的word1 与 j-1为结尾的word2的最近编辑距离 再加上一个操作。
+
+即 `dp[i][j] = dp[i - 1][j] + 1;`
+
+- 操作二：word2删除一个元素，那么就是以下标i - 1为结尾的word1 与 j-2为结尾的word2的最近编辑距离 再加上一个操作。
+
+即 `dp[i][j] = dp[i][j - 1] + 1;`
+
+这里有同学发现了，怎么都是删除元素，添加元素去哪了。
+
+**word2添加一个元素，相当于word1删除一个元素**，例如 `word1 = "ad" ，word2 = "a"`，`word1`删除元素`'d'` 和 `word2`添加一个元素`'d'`，变成`word1="a", word2="ad"`， 最终的操作数是一样！
+
+- 操作三：替换元素，`word1`替换`word1[i - 1]`，使其与`word2[j - 1]`相同，此时不用增删加元素。
+
+可以回顾一下，`if (word1[i - 1] == word2[j - 1])`的时候我们的操作 是 `dp[i][j] = dp[i - 1][j - 1]` 对吧。
+
+那么只需要一次替换的操作，就可以让 word1[i - 1] 和 word2[j - 1] 相同。
+
+所以 `dp[i][j] = dp[i - 1][j - 1] + 1;`
+
+综上，当 `if (word1[i - 1] != word2[j - 1])` 时取最小的，即：`dp[i][j] = min({dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]}) + 1;`
+
+**递归代码：**
+
+```c++
+if (word1[i - 1] == word2[j - 1]) {
+    dp[i][j] = dp[i - 1][j - 1];
+}
+else {
+    dp[i][j] = min({dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]}) + 1;
+}
+```
+
+**初始化：**
+
+`dp[i][0] `：以下标i-1为结尾的字符串word1，和空字符串word2，最近编辑距离为`dp[i][0]`。
+
+那么dp[i][0]就应该是i，对word1里的元素全部做删除操作，即：`dp[i][0] = i;`
+
+同理`dp[0][j] = j;`
+
+![image-20250307205121664](leetcode-master.assets/image-20250307205121664.png)
+
+## [647. 回文子串](https://leetcode.cn/problems/palindromic-substrings/)
+
+**`布尔类型的dp[i][j]`：**表示区间范围[i,j] （注意是左闭右闭）的子串是否是回文子串，如果是`dp[i][j]`为true，否则为false。
+
+**递推公式：**当s[i]与s[j]不相等，那没啥好说的了，`dp[i][j]`一定是false。
+
+当s[i]与s[j]相等时，这就复杂一些了，有如下三种情况
+
+- 情况一：下标i 与 j相同，同一个字符例如a，当然是回文子串
+- 情况二：下标i 与 j相差为1，例如aa，也是回文子串
+- 情况三：下标：i 与 j相差大于1的时候，例如cabac，此时s[i]与s[j]已经相同了，我们看i到j区间是不是回文子串就看aba是不是回文就可以了，那么aba的区间就是 i+1 与 j-1区间，这个区间是不是回文就看`dp[i + 1][j - 1]`是否为true。
+
+**初始化**为全false。
+
+**遍历顺序：**如果这矩阵是从上到下，从左到右遍历，那么会用到没有计算过的`dp[i + 1][j - 1]`，也就是根据不确定是不是回文的区间[i+1,j-1]，来判断了[i,j]是不是回文，那结果一定是不对的。
+
+**所以一定要从下到上，从左到右遍历，这样保证`dp[i + 1][j - 1]`都是经过计算的**。
+
+![image-20250307212018644](leetcode-master.assets/image-20250307212018644.png)
+
+```c++
+class Solution {
+public:
+    int countSubstrings(string s) {
+        vector<vector<bool>> dp(s.size(), vector<bool>(s.size(), false));
+        int result = 0;
+        for (int i = s.size() - 1; i >= 0; i--) {  // 注意遍历顺序
+            for (int j = i; j < s.size(); j++) {
+                if (s[i] == s[j]) {
+                    if (j - i <= 1) { // 情况一 和 情况二
+                        result++;
+                        dp[i][j] = true;
+                    } else if (dp[i + 1][j - 1]) { // 情况三
+                        result++;
+                        dp[i][j] = true;
+                    }
+                }
+            }
+        }
+        return result;
+    }
+};
+```
+
+## [516. 最长回文子序列](https://leetcode.cn/problems/longest-palindromic-subsequence/)
+
+**`dp[i][j]`：**字符串s在[i, j]范围内最长的回文子序列的长度为`dp[i][j]`。
+
+**递推公式：**
+
+如果s[i]与s[j]相同，那么`dp[i][j] = dp[i + 1][j - 1] + 2;`
+
+如果s[i]与s[j]不相同，说明s[i]和s[j]的同时加入 并不能增加[i,j]区间回文子序列的长度，那么分别加入s[i]、s[j]看看哪一个可以组成最长的回文子序列。
+
+加入s[j]的回文子序列长度为`dp[i + 1][j]`。
+
+加入s[i]的回文子序列长度为`dp[i][j - 1]`。
+
+那么`dp[i][j]`一定是取最大的，即：`dp[i][j] = max(dp[i + 1][j], dp[i][j - 1]);`
+
+**初始化：**
+
+首先要考虑当i 和j 相同的情况，从递推公式：`dp[i][j] = dp[i + 1][j - 1] + 2; `可以看出 递推公式是计算不到 i 和j相同时候的情况。
+
+所以需要手动初始化一下，当i与j相同，那么`dp[i`][j]一定是等于1的，即：一个字符的回文子序列长度就是1。
+
+其他情况`dp[i][j]`初始为0就行，这样递推公式：`dp[i][j] = max(dp[i + 1][j], dp[i][j - 1]); `中`dp[i][j]`才不会被初始值覆盖。
+
+**遍历顺序：**
+
+从递归公式中，可以看出，`dp[i][j] `依赖于 `dp[i + 1][j - 1] `，`dp[i + 1][j] `和` dp[i][j - 1]`，**遍历i的时候一定要从下到上遍历，这样才能保证下一行的数据是经过计算的**。
+
+![image-20250307214930832](leetcode-master.assets/image-20250307214930832.png)
+
+```c++
+class Solution {
+public:
+    int longestPalindromeSubseq(string s) {
+        vector<vector<int>> dp(s.size(), vector<int>(s.size(), 0));
+        for (int i = 0; i < s.size(); i++) dp[i][i] = 1;
+        for (int i = s.size() - 1; i >= 0; i--) {  // 注意遍历顺序
+            for (int j = i + 1; j < s.size(); j++) {
+                if (s[i] == s[j]) {
+                    dp[i][j] = dp[i + 1][j - 1] + 2;
+                } else {
+                    dp[i][j] = max(dp[i + 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        return dp[0][s.size() - 1];
+    }
+};
+```
+
+![image-20250307214930832](leetcode-master.assets/image-20250307214930832.png)
 
 # 图论
 
