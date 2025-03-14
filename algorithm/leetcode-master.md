@@ -1369,11 +1369,194 @@ public:
 
 # 单调栈
 
-**通常是一维数组，要寻找任一个元素的右边或者左边第一个比自己大或者小的元素的位置，此时我们就要想到可以用单调栈了**。时间复杂度为O(n)。
+**通常是一维数组，要寻找任一个元素的右边或者左边（第一个比自己大或者小的/最大最小）元素的位置，此时我们就要想到可以用单调栈了**。时间复杂度为O(n)。
+
+常见的题型就是下一个更大的元素和那种柱状图。
 
 单调栈本质是**空间换时间**。
 
-**单调栈里只需要存放元素的下标i就可以了**，如果需要使用对应的元素，直接T[i]就可以获取。
+```c++
+// 模板
+stack<int> stk;
+stk.push(0);  // stk里存的是下标，单调栈基本上都存下标，要找元素直接num[stk.top()]即可，先将下标0放入 
+for (int i = 1; i < nums.size(); i++) {  // 从头下标1开始
+    // 我这里是一个栈口为最小的单调栈
+    // 分成三类：大于等于小于
+    // 每类有对应的操作，操作完记得把i压栈
+	if (nums[i] > nums[stk.top()]) {
+        ...
+        stk.push(i);
+	} 
+    
+    else if (nums[i] == nums[stk.top()]) {
+		...
+        stk.push(i);
+	} 
+    
+    else {
+		while (!stk.empty()) {
+		...
+		}
+		stk.push(i);
+	}
+	
+}
+```
+
+## [739. 每日温度](https://leetcode.cn/problems/daily-temperatures/)
+
+**单调栈里只需要存放元素的下标i就可以了：**这样能够计算题目中要求的后面第几个，如果需要使用对应的元素，直接arr[i]就可以获取。
+
+这里使用单调栈主要有三个判断条件。
+
+- 当前遍历的元素T[i]小于栈顶元素T[st.top()]的情况：
+- 当前遍历的元素T[i]等于栈顶元素T[st.top()]的情况
+- 当前遍历的元素T[i]大于栈顶元素T[st.top()]的情况
+
+分析每一个情况即可。
+
+**注意：只有单调栈递增（从栈口到栈底顺序），就是求右边第一个比自己大的，单调栈递减的话，就是求右边第一个比自己小的。这个两个方向试一下就知道了。**
+
+```c++
+class Solution {
+public:
+    vector<int> dailyTemperatures(vector<int>& temperatures) {
+        vector<int> ans(temperatures.size(), 0);
+        stack<int> stk;
+        stk.push(0);
+        for (int i = 1; i < temperatures.size(); i++) {
+            if (temperatures[i] <= temperatures[stk.top()]) {
+                stk.push(i);
+                continue;
+            }
+            while (stk.empty() != 1 && temperatures[i] > temperatures[stk.top()]) {
+                ans[stk.top()] = i - stk.top();
+                stk.pop();
+            }
+            stk.push(i);
+        }
+        return ans;
+    }
+};
+```
+
+## [496. 下一个更大元素 I](https://leetcode.cn/problems/next-greater-element-i/)
+
+和上一题类似。
+
+## [503. 下一个更大元素 II](https://leetcode.cn/problems/next-greater-element-ii/)
+
+和上一题类似，循环两遍这个数组即可
+
+## [42. 接雨水](https://leetcode.cn/problems/trapping-rain-water/)
+
+可以看出每一列雨水的高度，取决于，该列左侧最高的柱子和右侧最高的柱子中最矮的那个柱子的高度。
+
+**暴力：**直接for循环，每次向左向右找最高的柱子。时间：O(n^2^)
+
+**优化暴力：**用maxLeft和maxRight两个数组存储左侧最高的柱子和右侧最高的柱子，这样每次不用往左往右来找柱子。时间：O(n)。这个方法好！
+
+即从左向右遍历：maxLeft[i] = max(height[i], maxLeft[i - 1]);
+
+从右向左遍历：maxRight[i] = max(height[i], maxRight[i + 1]);
+
+**单调栈：栈内存放的是下标，想知道高度a[stk.top()]即可**
+
+使用单调栈会出现如下的情况，遇到这种情况就可以计算雨水了：
+
+![image-20250314113050295](leetcode-master.assets/image-20250314113050295.png)
+
+如果遇到相同的元素，更新栈内下标，就是将栈里元素（旧下标）弹出，将新元素（新下标）加入栈中。
+
+![image-20250314113127713](leetcode-master.assets/image-20250314113127713.png)
+
+```c++
+class Solution {
+public:
+    int trap(vector<int>& height) {
+        if (height.size() <= 2) return 0; // 可以不加
+        stack<int> st; // 存着下标，计算的时候用下标对应的柱子高度
+        st.push(0);
+        int sum = 0;
+        for (int i = 1; i < height.size(); i++) {
+            if (height[i] < height[st.top()]) {     // 情况一
+                st.push(i);
+            } if (height[i] == height[st.top()]) {  // 情况二
+                st.pop(); // 其实这一句可以不加，效果是一样的，但处理相同的情况的思路却变了。
+                st.push(i);
+            } else {                                // 情况三
+                while (!st.empty() && height[i] > height[st.top()]) { // 注意这里是while
+                    int mid = st.top();
+                    st.pop();
+                    if (!st.empty()) {
+                        int h = min(height[st.top()], height[i]) - height[mid];
+                        int w = i - st.top() - 1; // 注意减一，只求中间宽度
+                        sum += h * w;
+                    }
+                }
+                st.push(i);
+            }
+        }
+        return sum;
+    }
+};
+```
+
+## [84. 柱状图中最大的矩形](https://leetcode.cn/problems/largest-rectangle-in-histogram/)
+
+这里相当于找每个柱子左右第一个小于它的柱子，这样可以算出以该柱子为高，向左右延伸，能得到的最大面积。
+
+接雨水是找左右最大的柱子，这个可以用记忆数组优化一下暴力做，这道题是第一个小于， 每次要往左或往右循环走来找，没办法用记忆数组，所以还是用单调栈。
+
+使用单调栈，就会出现如下情况，这和接雨水就是正好相反的情况，：
+
+![image-20250314153509441](leetcode-master.assets/image-20250314153509441.png)
+
+此时大家应该可以发现其实就是**栈顶和栈顶的下一个元素以及要入栈的三个元素组成了我们要求最大面积的高度和宽度，如图为40，60，50，则对60来说就是60 * 1为最大**
+
+```c++
+// 版本一
+class Solution {
+public:
+    int largestRectangleArea(vector<int>& heights) {
+        int result = 0;
+        stack<int> st;
+        heights.insert(heights.begin(), 0); // 数组头部加入元素0
+        heights.push_back(0); // 数组尾部加入元素0
+        st.push(0);
+
+        // 第一个元素已经入栈，从下标1开始
+        for (int i = 1; i < heights.size(); i++) {
+            if (heights[i] > heights[st.top()]) { // 情况一
+                st.push(i);
+            } else if (heights[i] == heights[st.top()]) { // 情况二
+                st.pop(); // 这个可以加，可以不加，效果一样，思路不同
+                st.push(i);
+            } else { // 情况三
+                while (!st.empty() && heights[i] < heights[st.top()]) { // 注意是while
+                    int mid = st.top();
+                    st.pop();
+                    if (!st.empty()) {
+                        int left = st.top();
+                        int right = i;
+                        int w = right - left - 1;
+                        int h = heights[mid];
+                        result = max(result, w * h);
+                    }
+                }
+                st.push(i);
+            }
+        }
+        return result;
+    }
+};
+```
+
+这里有个细节：在在 height数组前后，都加了一个元素0。
+
+在前面加0：如果数组本身是降序的，例如 [8,6,4,2]，在 8 入栈后，6 开始与8 进行比较，此时我们得到 mid（8），right（6），但是得不到 left。
+
+在后面加0：如果数组本身就是升序的，例如[2,4,6,8]，那么入栈之后 都是单调递减，一直都没有走 情况三 计算结果的那一步。 那么结尾加一个0，就会让栈里的所有元素，走到情况三的逻辑。
 
 # 字符串
 
