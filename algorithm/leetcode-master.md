@@ -104,6 +104,28 @@ return slowIndex;
 
 ![image-20240317234211871](leetcode-master.assets/image-20240317234211871.png)
 
+## [1365. 有多少小于当前数字的数字](https://leetcode.cn/problems/how-many-numbers-are-smaller-than-the-current-number/)
+
+弱智题，排序来提升效率。
+
+## [941. 有效的山脉数组](https://leetcode.cn/problems/valid-mountain-array/)
+
+简单题，直接写但是不好写。使用双指针从左从右向中间靠拢。
+
+## [1207. 独一无二的出现次数](https://leetcode.cn/problems/unique-number-of-occurrences/)
+
+用unordered_map记录，unordered_set去重。
+
+## [283. 移动零](https://leetcode.cn/problems/move-zeroes/)
+
+先遍历一遍对不是0的数进行记录它前面有几个0，再遍历一遍将不是0的数向前移动。
+
+## [189. 轮转数组](https://leetcode.cn/problems/rotate-array/)
+
+空间为`O(1)`的方法就是：对前半数组反转，对后半数组反转，最后对全部反转。
+
+测试样例有个[-1]，k=2。优化一下就是让k去个模，因为轮转nums.size()就相当于不变。
+
 # 链表
 
 - 链表是一种通过指针串联在一起的线性结构，每一个节点由两部分组成，一个是数据域一个是指针域（存放指向下一个节点的指针），最后一个节点的指针域指向null（空指针的意思）。
@@ -5598,3 +5620,680 @@ public:
 };
 ```
 
+## Prim：最短邻近边，节点少使用
+
+[卡码网：53. 寻宝](https://kamacoder.com/problempage.php?pid=1053)
+
+这题使用二维矩阵来记录边的信息。
+
+**minDist[i]数组含义是顶点i和MST连着的最小边长度**
+
+循环（**顶点数-1=边数**）次：
+
+1. 循环minDist数组找到当前和mst连着的最小边及其未加入树的那侧的顶点
+2. 将该节点加入树（用isInTree数组记录）
+3. 循环找这个顶点的所有边，若边比minDist中存储的小，更新minDist数组
+
+**注意：**
+
+- minDist最小距离数组初值设为比INT_MIN小的数，这样在第一次循环minDist数组时才方便找到第1个点。也可以像dijkstra一样，最早就先把minDist[1]设置为0，这样就第一次循环minDist就可以找到第1个点。
+- 选最小节点（第一步）和更新minDist（第三步）都要判断该点在不在MST中，只有不在MST才有效
+- 最后统计MST的长度，不要统计minDist[1]第一个点的minDist，因为他是第一个被选的点，没有更新这个minDist，总共应该统计顶点数-1=边数次。
+
+**拓展：**
+
+如果要保存所有的边，你想想，MST是一颗树诶，所以用一个parent[子节点]=父节点，这样一个一维数组即可保存。这是在第三步完成的。
+
+```c++
+parent[j] = cur; // 记录最小生成树的边 （注意数组指向的顺序很重要）
+```
+
+注意顺序，cur是先加入的节点，j是还未加入的节点，下一次也不一定会加入，如果没有加入，他的父节点也有可能被更新。
+
+```c++
+#include<iostream>
+#include<vector>
+#include <climits>
+
+using namespace std;
+int main() {
+    int v, e;
+    int x, y, k;
+    cin >> v >> e;
+    // 填一个默认最大值，题目描述val最大为10000
+    vector<vector<int>> grid(v + 1, vector<int>(v + 1, 10001));
+    while (e--) {
+        cin >> x >> y >> k;
+        // 因为是双向图，所以两个方向都要填上
+        grid[x][y] = k;
+        grid[y][x] = k;
+
+    }
+    // 所有节点到最小生成树的最小距离
+    vector<int> minDist(v + 1, 10001);
+
+    // 这个节点是否在树里
+    vector<bool> isInTree(v + 1, false);
+
+    // 我们只需要循环 n-1次，建立 n - 1条边，就可以把n个节点的图连在一起
+    for (int i = 1; i < v; i++) {
+
+        // 1、prim三部曲，第一步：选距离生成树最近节点
+        int cur = -1; // 选中哪个节点 加入最小生成树
+        int minVal = INT_MAX;
+        for (int j = 1; j <= v; j++) { // 1 - v，顶点编号，这里下标从1开始
+            //  选取最小生成树节点的条件：
+            //  （1）不在最小生成树里
+            //  （2）距离最小生成树最近的节点
+            if (!isInTree[j] &&  minDist[j] < minVal) {
+                minVal = minDist[j];
+                cur = j;
+            }
+        }
+        // 2、prim三部曲，第二步：最近节点（cur）加入生成树
+        isInTree[cur] = true;
+
+        // 3、prim三部曲，第三步：更新非生成树节点到生成树的距离（即更新minDist数组）
+        // cur节点加入之后， 最小生成树加入了新的节点，那么所有节点到 最小生成树的距离（即minDist数组）需要更新一下
+        // 由于cur节点是新加入到最小生成树，那么只需要关心与 cur 相连的 非生成树节点 的距离 是否比 原来 非生成树节点到生成树节点的距离更小了呢
+        for (int j = 1; j <= v; j++) {
+            // 更新的条件：
+            // （1）节点是 非生成树里的节点
+            // （2）与cur相连的某节点的权值 比 该某节点距离最小生成树的距离小
+            // 很多录友看到自己 就想不明白什么意思，其实就是 cur 是新加入 最小生成树的节点，那么 所有非生成树的节点距离生成树节点的最近距离 由于 cur的新加入，需要更新一下数据了
+            if (!isInTree[j] && grid[cur][j] < minDist[j]) {
+                minDist[j] = grid[cur][j];
+            }
+        }
+    }
+    // 统计结果
+    int result = 0;
+    for (int i = 2; i <= v; i++) { // 不计第一个顶点，因为统计的是边的权值，v个节点有 v-1条边
+        result += minDist[i];
+    }
+    cout << result << endl;
+
+}
+```
+
+## Kruskal：最短边，边少使用
+
+要判断当前最短边的两个顶点在不在同一MST上，用**并查集**判断。
+
+这里要sort排一下边的长度关系。
+
+```c++
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+// l,r为 边两边的节点，val为边的数值
+struct Edge {
+    int l, r, val;
+};
+
+// 节点数量
+int n = 10001;
+// 并查集标记节点关系的数组
+vector<int> father(n, -1); // 节点编号是从1开始的，n要大一些
+
+// 并查集初始化
+void init() {
+    for (int i = 0; i < n; ++i) {
+        father[i] = i;
+    }
+}
+
+// 并查集的查找操作
+int find(int u) {
+    return u == father[u] ? u : father[u] = find(father[u]); // 路径压缩
+}
+
+// 并查集的加入集合
+void join(int u, int v) {
+    u = find(u); // 寻找u的根
+    v = find(v); // 寻找v的根
+    if (u == v) return ; // 如果发现根相同，则说明在一个集合，不用两个节点相连直接返回
+    father[v] = u;
+}
+
+int main() {
+
+    int v, e;
+    int v1, v2, val;
+    vector<Edge> edges;
+    int result_val = 0;
+    cin >> v >> e;
+    while (e--) {
+        cin >> v1 >> v2 >> val;
+        edges.push_back({v1, v2, val});
+    }
+
+    // 执行Kruskal算法
+    // 按边的权值对边进行从小到大排序
+    sort(edges.begin(), edges.end(), [](const Edge& a, const Edge& b) {
+            return a.val < b.val;
+    });
+
+    // 并查集初始化
+    init();
+
+    // 从头开始遍历边
+    for (Edge edge : edges) {
+        // 并查集，搜出两个节点的祖先
+        int x = find(edge.l);
+        int y = find(edge.r);
+
+        // 如果祖先不同，则不在同一个集合
+        if (x != y) {
+            result_val += edge.val; // 这条边可以作为生成树的边
+            join(x, y); // 两个节点加入到同一个集合
+        }
+    }
+    cout << result_val << endl;
+    return 0;
+}
+
+```
+
+## 拓扑排序
+
+[卡码网：117. 软件构建](https://kamacoder.com/problempage.php?pid=1191)
+
+拓扑排序的过程，其实就两步：
+
+1. 找到入度为 0 的节点，加入结果集
+2. 将该节点从图中移除
+
+这个标答空间复杂度低，使用：
+
+- inDegree记录入度
+- unordered_map记录谁指向谁（`unordered_map<int, vector<int>> umap;`）
+- 用队列que
+
+空间复杂度高就用二维数组记录，这时候需要一个数组来记录谁已经被从图中移除了，不然在图里不好标记。
+
+```c++
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <unordered_map>
+using namespace std;
+int main() {
+    int m, n, s, t;
+    cin >> n >> m;
+    vector<int> inDegree(n, 0); // 记录每个文件的入度
+
+    unordered_map<int, vector<int>> umap;// 记录文件依赖关系
+    vector<int> result; // 记录结果
+
+    while (m--) {
+        // s->t，先有s才能有t
+        cin >> s >> t;
+        inDegree[t]++; // t的入度加一
+        umap[s].push_back(t); // 记录s指向哪些文件
+    }
+    queue<int> que;
+    for (int i = 0; i < n; i++) {
+        // 入度为0的文件，可以作为开头，先加入队列
+        if (inDegree[i] == 0) que.push(i);
+        //cout << inDegree[i] << endl;
+    }
+    // int count = 0;
+    while (que.size()) {
+        int  cur = que.front(); // 当前选中的文件
+        que.pop();
+        //count++;
+        result.push_back(cur);
+        vector<int> files = umap[cur]; //获取该文件指向的文件
+        if (files.size()) { // cur有后续文件
+            for (int i = 0; i < files.size(); i++) {
+                inDegree[files[i]] --; // cur的指向的文件入度-1
+                if(inDegree[files[i]] == 0) que.push(files[i]);
+            }
+        }
+    }
+    if (result.size() == n) {
+        for (int i = 0; i < n - 1; i++) cout << result[i] << " ";
+        cout << result[n - 1];
+    } else cout << -1 << endl;
+
+
+}
+```
+
+## dijkstra（简化版）
+
+[卡码网：47. 参加科学大会](https://kamacoder.com/problempage.php?pid=1047)
+
+**dijkstra三部曲**：
+
+1. 第一步，选源点到哪个节点近且该节点未被访问过
+2. 第二步，该最近节点被标记访问过
+3. 第三步，更新非访问节点到源点的距离（即更新minDist数组）
+
+和**prim**基本一样，唯一不同就是第三步更新距离时为
+
+```c++
+if (!visited[v] && grid[cur][v] != INT_MAX && minDist[cur] + grid[cur][v] < minDist[v]) {
+    minDist[v] = minDist[cur] + grid[cur][v];
+}
+// 未访问的节点 且 从1号节点到该节点的距离会因为新加入的点更新，因为这个更新所以要保证这个边不会是INT_MAX,即这条边存在
+```
+
+```c++
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+int main() {
+    int n, m, p1, p2, val;
+    cin >> n >> m;
+
+    vector<vector<int>> grid(n + 1, vector<int>(n + 1, INT_MAX));
+    for(int i = 0; i < m; i++){
+        cin >> p1 >> p2 >> val;
+        grid[p1][p2] = val;
+    }
+
+    int start = 1;
+    int end = n;
+
+    // 存储从源点到每个节点的最短距离
+    std::vector<int> minDist(n + 1, INT_MAX);
+
+    // 记录顶点是否被访问过
+    std::vector<bool> visited(n + 1, false);
+
+    minDist[start] = 0;  // 起始点到自身的距离为0
+
+    for (int i = 1; i <= n; i++) { // 遍历所有节点
+
+        int minVal = INT_MAX;
+        int cur = 1;
+
+        // 1、选距离源点最近且未访问过的节点
+        for (int v = 1; v <= n; ++v) {
+            if (!visited[v] && minDist[v] < minVal) {
+                minVal = minDist[v];
+                cur = v;
+            }
+        }
+
+        visited[cur] = true;  // 2、标记该节点已被访问
+
+        // 3、第三步，更新非访问节点到源点的距离（即更新minDist数组）
+        for (int v = 1; v <= n; v++) {
+            if (!visited[v] && grid[cur][v] != INT_MAX && minDist[cur] + grid[cur][v] < minDist[v]) {
+                minDist[v] = minDist[cur] + grid[cur][v];
+            }
+        }
+
+    }
+
+    if (minDist[end] == INT_MAX) cout << -1 << endl; // 不能到达终点
+    else cout << minDist[end] << endl; // 到达终点最短路径
+
+}
+```
+
+## dijkstra（邻接表+堆优化）
+
+[卡码网：47. 参加科学大会](https://kamacoder.com/problempage.php?pid=1047)
+
+**邻接表：**
+
+```c++
+struct Edge {
+    int to;  // 链接的节点
+    int val; // 边的权重
+
+    Edge(int t, int w): to(t), val(w) {}  // 构造函数
+};
+
+vector<list<Edge>> grid(n + 1); // 邻接表
+
+// 或者直接
+vector<list<pair<int, int>>> graph(n + 1);
+```
+
+![image-20250315124613758](leetcode-master.assets/image-20250315124613758.png)
+
+**堆优化：使用优先队列，放边在小顶堆里，这样每次就都是最小权值的边**
+
+```c++
+// 小顶堆
+class mycomparison {
+public:
+    bool operator()(const pair<int, int>& lhs, const pair<int, int>& rhs) {
+        return lhs.second > rhs.second;
+    }
+};
+// 优先队列中存放 pair<节点编号，源点到该节点的权值> 
+priority_queue<pair<int, int>, vector<pair<int, int>>, mycomparison> pq;
+```
+
+代码：**注意第三步中要将更小的路径放到优先队列里**
+
+```c++
+#include <bits/stdc++.h>
+using namespace std; 
+
+// 小顶堆
+class mycmp{
+	public:
+	bool operator()(pair<int, int>& x, pair<int, int>& y) {
+		return x.second > y.second;
+	}
+};
+
+int main() {
+	int n, m, d1, d2, val;
+	cin >> n >> m;
+
+	// graph[i]代表起点为i，pair<终点，这条边的权值>，就是个邻接矩阵
+	vector<list<pair<int, int>>> graph(n + 1);
+	
+	// 记录顶点是否被访问过
+	vector<bool> visited(n + 1, false);  
+	
+	// 存储从源点到每个节点的最短距离
+	vector<int> min_dist(n + 1, INT_MAX);
+
+	// 优先队列中存放 pair<节点，源点到该节点的路径权值> 为一个小顶堆，每次pq.top()为最小的路径
+	priority_queue<pair<int, int>, vector<pair<int, int>>, mycmp> pq;
+
+	for (int i = 0; i < m; i++) {
+		cin >> d1 >> d2 >> val;
+		graph[d1].emplace_back(pair<int, int>(d2, val));
+	}
+
+	int start = 1;  // 起点
+	int end = n;    // 终点
+
+	min_dist[start] = 0;  // 起始点到自身的距离为0
+	pq.push(pair<int, int>(start, 0));  // 初始化队列，源点到源点的距离为0，所以初始为0
+
+	while(!pq.empty()) {
+		// 1. 第一步，选源点到哪个节点近且该节点未被访问过 （通过优先级队列来实现）
+        // <节点， 源点到该节点的距离>
+		pair<int, int> cur = pq.top();
+		pq.pop();
+		
+		if (visited[cur.first]) continue;
+
+		// 2. 第二步，该最近节点被标记访问过
+		visited[cur.first] = true;
+		
+		// 3. 第三步，更新非访问节点到源点的距离（即更新minDist数组）
+		for (auto edge: graph[cur.first]) {
+			if (!visited[edge.first] && min_dist[edge.first] > min_dist[cur.first] + edge.second) {
+				min_dist[edge.first] = min_dist[cur.first] + edge.second;
+				// 将一个节点的更小的路径放到pq里
+				pq.push(pair<int, int>(edge.first, min_dist[edge.first]));
+			}
+		}
+	}
+
+	if (min_dist[end] == INT_MAX) {  // 不能到达终点
+		cout << -1 << endl;
+	} else {
+		cout << min_dist[end] << endl;  // 到达终点最短路径
+	}
+
+	return 0;
+}
+
+```
+
+堆优化一定要配上邻接矩阵，不然就是一个 高效的算法 使用了 低效的数据结构，那么 整体算法效率 依然是低的。
+
+## Bellman_ford
+
+[卡码网：94. 城市间货物运输 I](https://kamacoder.com/problempage.php?pid=1152)
+
+Bellman_ford本质就是**动态规划**，**用于无负权环的有负权图**
+
+但是因为是图，前一个状态不一定有状态，所以循环n-1次，具体看下面优化版本中说的
+
+**松弛操作：对所有的边**
+
+`minDist[终点] = min(minDist[起点] + value, minDist[终点])`
+
+要做**n-1次松弛操作，每次松弛操作对所有的边做一次，**
+
+**注意：**
+
+- 这里用引用来取边，否则会tle
+- 每次松弛操作前判断`min_dist[起点] != INT_MAX`，动态规划如果要更新，肯定是前面已经有状态了。
+
+```c++
+#include <iostream>
+#include <vector>
+#include <list>
+#include <climits>
+using namespace std;
+
+int main() {
+    int n, m, p1, p2, val;
+    cin >> n >> m;
+
+    vector<vector<int>> grid;
+
+    // 将所有边保存起来
+    for(int i = 0; i < m; i++){
+        cin >> p1 >> p2 >> val;
+        // p1 指向 p2，权值为 val
+        grid.push_back({p1, p2, val});
+
+    }
+    int start = 1;  // 起点
+    int end = n;    // 终点
+
+    vector<int> minDist(n + 1 , INT_MAX);
+    minDist[start] = 0;
+    for (int i = 1; i < n; i++) { // 对所有边 松弛 n-1 次
+        for (vector<int> &side : grid) { // 每一次松弛，都是对所有边进行松弛
+            int from = side[0]; // 边的出发点
+            int to = side[1]; // 边的到达点
+            int price = side[2]; // 边的权值
+            // 松弛操作 
+            // minDist[from] != INT_MAX 防止从未计算过的节点出发
+            if (minDist[from] != INT_MAX && minDist[to] > minDist[from] + price) { 
+                minDist[to] = minDist[from] + price;  
+            }
+        }
+    }
+    if (minDist[end] == INT_MAX) cout << "unconnected" << endl; // 不能到达终点
+    else cout << minDist[end] << endl; // 到达终点最短路径
+
+}
+```
+
+### 使用优化版本
+
+循环n-1次是因为每次minDist[起点]不一定已经是最优的，比如用下面这张图（最坏情况）就可以发现一定要循环n-1次：
+
+![image-20250315171558362](leetcode-master.assets/image-20250315171558362.png)
+
+这样就可以优化，只有minDist[起点]有值才进行松弛操作。可以使用队列（或栈，因为对顺序没有要求）配合邻接表。
+
+```c++
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <list>
+#include <climits>
+using namespace std;
+
+struct Edge { //邻接表
+    int to;  // 链接的节点
+    int val; // 边的权重
+
+    Edge(int t, int w): to(t), val(w) {}  // 构造函数
+};
+
+
+int main() {
+    int n, m, p1, p2, val;
+    cin >> n >> m;
+
+    vector<list<Edge>> grid(n + 1); 
+
+    vector<bool> isInQueue(n + 1); // 加入优化，已经在队里里的元素不用重复添加
+
+    // 将所有边保存起来
+    for(int i = 0; i < m; i++){
+        cin >> p1 >> p2 >> val;
+        // p1 指向 p2，权值为 val
+        grid[p1].push_back(Edge(p2, val));
+    }
+    int start = 1;  // 起点
+    int end = n;    // 终点
+
+    vector<int> minDist(n + 1 , INT_MAX);
+    minDist[start] = 0;
+
+    queue<int> que;
+    que.push(start); 
+
+    while (!que.empty()) {
+
+        int node = que.front(); que.pop();
+        isInQueue[node] = false; // 从队列里取出的时候，要取消标记，我们只保证已经在队列里的元素不用重复加入
+        for (Edge edge : grid[node]) {
+            int from = node;
+            int to = edge.to;
+            int value = edge.val;
+            if (minDist[to] > minDist[from] + value) { // 开始松弛
+                minDist[to] = minDist[from] + value; 
+                if (isInQueue[to] == false) { // 已经在队列里的元素不用重复添加
+                    que.push(to);
+                    isInQueue[to] = true;
+                }
+            }
+        }
+
+    }
+    if (minDist[end] == INT_MAX) cout << "unconnected" << endl; // 不能到达终点
+    else cout << minDist[end] << endl; // 到达终点最短路径
+}
+```
+
+**效率：**图越稠密，优化版的效率越接近原版，又因为出队列入队列的时间复杂度蛮高的，所以优化版的效率可能更差
+
+### 判断负权回路
+
+如果已经松弛了n-1次，一定会达到最佳，但是如果再尝试去松弛一次却能成功，说明产生了负权回路：
+
+![image-20250315173906550](leetcode-master.assets/image-20250315173906550.png)
+
+对于普通版本：
+
+```c++
+for (auto &edge: graph) {
+    int from = edge[0];
+    int to = edge[1];
+    int val = edge[2];
+    if (min_dist[to] > min_dist[from] + val) {
+        cout << "circle" << endl;
+        return 0;
+    }
+}
+```
+
+对于优化版本，由于优化了，没有记录n-1次松弛，所以手动记录：那么如果节点加入队列的次数 超过了 n-1次 ，那么该图就一定有负权回路。
+
+```c++
+ while (!que.empty()) {
+
+    int node = que.front(); que.pop();
+
+    for (Edge edge : grid[node]) {
+        int from = node;
+        int to = edge.to;
+        int value = edge.val;
+        if (minDist[to] > minDist[from] + value) { // 开始松弛
+            minDist[to] = minDist[from] + value;
+            que.push(to);
+            count[to]++; 
+            if (count[to] == n) {// 如果加入队列次数超过 n-1次 就说明该图与负权回路
+                flag = true;
+                while (!que.empty()) que.pop();
+                break;
+            }
+        }
+    }
+}
+```
+
+### [卡码网：96. 城市间货物运输 III](https://kamacoder.com/problempage.php?pid=1154)
+
+计算在最多经过 k 个城市的条件下，从城市 src 到城市 dst 的最低运输成本。
+
+理论上来说，**对所有边松弛一次，相当于计算 起点到达 与起点一条边相连的节点 的最短距离**。
+
+对所有边松弛两次，相当于计算 起点到达 与起点两条边相连的节点的最短距离。
+
+对所有边松弛三次，以此类推。
+
+但在对所有边松弛第一次的过程中，大家会发现，不仅仅 与起点一条边相连的节点更新了，所有节点都更新了。
+
+而且对所有边的后面几次松弛，同样是更新了所有的节点，说明 至多经过k 个节点 这个限制 根本没有限制住，每个节点的数值都被更新了。
+
+这样就造成了一个情况，即：计算minDist数组的时候，基于了本次松弛的 minDist数值，而不是上一次 松弛时候minDist的数值。
+
+所以**在每次计算 minDist 时候，要基于 对所有边上一次松弛的 minDist 数值才行**，所以我们要记录上一次松弛的minDist。
+
+```c++
+// 版本二
+#include <iostream>
+#include <vector>
+#include <list>
+#include <climits>
+using namespace std;
+
+int main() {
+    int src, dst,k ,p1, p2, val ,m , n;
+    
+    cin >> n >> m;
+
+    vector<vector<int>> grid;
+
+    for(int i = 0; i < m; i++){
+        cin >> p1 >> p2 >> val;
+        grid.push_back({p1, p2, val});
+    }
+
+    cin >> src >> dst >> k;
+
+    vector<int> minDist(n + 1 , INT_MAX);
+    minDist[src] = 0;
+    vector<int> minDist_copy(n + 1); // 用来记录上一次遍历的结果
+    for (int i = 1; i <= k + 1; i++) {
+        minDist_copy = minDist; // 获取上一次计算的结果
+        for (vector<int> &side : grid) {
+            int from = side[0];
+            int to = side[1];
+            int price = side[2];
+            // 注意使用 minDist_copy 来计算 minDist 
+            if (minDist_copy[from] != INT_MAX && minDist[to] > minDist_copy[from] + price) {  
+                minDist[to] = minDist_copy[from] + price;
+            }
+        }
+    }
+    if (minDist[dst] == INT_MAX) cout << "unreachable" << endl; // 不能到达终点
+    else cout << minDist[dst] << endl; // 到达终点最短路径
+
+}
+```
+
+## Floyd
+
+[卡码网：97. 小明逛公园](https://kamacoder.com/problempage.php?pid=1155)
+
+**Floyd 算法对边的权值正负没有要求，都可以处理**。
+
+Floyd算法核心思想是**动态规划**。

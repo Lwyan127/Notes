@@ -168,8 +168,27 @@ https://blog.csdn.net/m0_51658421/article/details/127568774
     https://blog.csdn.net/ironman321/article/details/105319203
     
     https://blog.csdn.net/weixin_73922932/article/details/127778609
-
-
+    
+  - 如果就用stl/struct来制作邻接表
+  
+    ```c++
+    vector<list<pair<int,int>>> grid(n + 1);
+    ```
+  
+    ![image-20250315124151673](algorithm.assets/image-20250315124151673.png)
+  
+  - 防止搞不清楚pair中的两个int哪个是有向边的终点哪个是边权值，可以用struct
+  
+    ```c++
+    struct Edge {
+        int to;  // 链接的节点
+        int val; // 边的权重
+    
+        Edge(int t, int w): to(t), val(w) {}  // 构造函数
+    };
+    
+    vector<list<Edge>> grid(n + 1); // 邻接表
+    ```
 
 # 快速排序
 
