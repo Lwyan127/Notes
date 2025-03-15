@@ -2840,7 +2840,7 @@ priority_queue<int,vector<int>, greater<int>  > pq;
 ```c++
 struct MyComparator {
     bool operator()(int a, int b) {
-        // 自定义排序规则，按照元素的绝对值进行降序排序
+        // 重载()函数调用运算符，自定义排序规则，按照元素的绝对值进行降序排序
         return abs(a) < abs(b);
     }
 };
@@ -2857,6 +2857,23 @@ int main() {
     }
     return 0;
 }
+```
+
+**注意：自定义排序重载的bool函数，和sort中的cmp正好是相反的！！！**
+
+也就是说
+
+```c++
+static bool cmp(int x, int y) {
+    return x > y;
+}  // 降序
+
+struct MyComparator {
+    bool operator()(int a, int b) {
+        // 如果把优先队列看成数组，他是升序的。如果看成堆，则是小顶堆。
+        return a > b;
+    }
+};
 ```
 
 **结构体(或自定义)优先级设置**
