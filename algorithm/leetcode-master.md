@@ -9,9 +9,9 @@
 
 ## [704. 二分查找](https://leetcode.cn/problems/binary-search/)
 
-- 时间复杂度：O(log n)
+- 时间复杂度：O(log
 - 空间复杂度：O(1)
-- 算好区间，包括是否开闭
+- 算好区间，包括是否开闭。**如果是左闭右闭，则循环中while (left <= right)；如果是左闭右开，则循环中while (left < right)，因为left == right在区间[left, right)是没有意义的**
 
 ```c++
 while (left <= right) {
@@ -126,11 +126,100 @@ return slowIndex;
 
 测试样例有个[-1]，k=2。优化一下就是让k去个模，因为轮转nums.size()就相当于不变。
 
+## [724. 寻找数组的中心下标](https://leetcode.cn/problems/find-pivot-index/)
+
+读懂题。看看例子，中心下标在最左端/最右端，nums数组只有1个数/2个数，看看这些特殊情况能不能跑对。做其他的题也要这样，找特殊例子看能不能跑对。
+
+## [35. 搜索插入位置](https://leetcode.cn/problems/search-insert-position/)
+
+这是一道使用二分的题目，但是有一些插入需要的条件。
+
+想好用左闭右闭还是左闭右开，两者写法不同。
+
+```c++
+class Solution {
+public:
+    int searchInsert(vector<int>& nums, int target) {
+        int n = nums.size();
+        int left = 0;
+        int right = n - 1; // 定义target在左闭右闭的区间里，[left, right]
+        while (left <= right) { // 当left==right，区间[left, right]依然有效
+            int middle = left + ((right - left) / 2);// 防止溢出 等同于(left + right)/2
+            if (nums[middle] > target) {
+                right = middle - 1; // target 在左区间，所以[left, middle - 1]
+            } else if (nums[middle] < target) {
+                left = middle + 1; // target 在右区间，所以[middle + 1, right]
+            } else { // nums[middle] == target
+                return middle;
+            }
+        }
+        // 分别处理如下四种情况
+        // 目标值在数组所有元素之前  [0, -1]
+        // 目标值等于数组中某一个元素  return middle;
+        // 目标值插入数组中的位置 [left, right]，return  right + 1
+        // 目标值在数组所有元素之后的情况 [left, right]， 因为是右闭区间，所以 return right + 1
+        return right + 1;
+    }
+};
+```
+
+## [34. 在排序数组中查找元素的第一个和最后一个位置](https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/)
+
+恶心到极点的一道题。边界情况麻烦的要死。
+
+寻找target在数组里的左右边界，有如下三种情况：
+
+- 情况一：target 在数组范围的右边或者左边，例如数组{3, 4, 5}，target为2或者数组{3, 4, 5},target为6，此时应该返回{-1, -1}
+- 情况二：target 在数组范围中，且数组中不存在target，例如数组{3,6,7},target为5，此时应该返回{-1, -1}
+- 情况三：target 在数组范围中，且数组中存在target，例如数组{3,6,7},target为6，此时应该返回{1, 1}
+
+找右边界：
+
+```c++
+// 二分查找，寻找target的右边界（不包括target）
+// 如果rightBorder为没有被赋值（即target在数组范围的左边，例如数组[3,3]，target为2），为了处理情况一
+int getRightBorder(vector<int>& nums, int target) {
+    int left = 0;
+    int right = nums.size() - 1; // 定义target在左闭右闭的区间里，[left, right]
+    int rightBorder = -2; // 记录一下rightBorder没有被赋值的情况
+    while (left <= right) { // 当left==right，区间[left, right]依然有效
+        int middle = left + ((right - left) / 2);// 防止溢出 等同于(left + right)/2
+        if (nums[middle] > target) {
+            right = middle - 1; // target 在左区间，所以[left, middle - 1]
+        } else { // 当nums[middle] == target的时候，更新left，这样才能得到target的右边界
+            left = middle + 1;
+            rightBorder = left;
+        }
+    }
+    return rightBorder;  // 返回的是[left, right]中left再左边一位 或者 -2
+}
+```
+
+左边界完全相反就行了。
+
+主函数：
+
+```c++
+vector<int> searchRange(vector<int>& nums, int target) {
+    int leftBorder = getLeftBorder(nums, target);
+    int rightBorder = getRightBorder(nums, target);
+    // 情况一
+    if (leftBorder == -2 || rightBorder == -2) return {-1, -1};
+    // 情况三
+    if (rightBorder - leftBorder > 1) return {leftBorder + 1, rightBorder - 1};
+    // 情况二
+    return {-1, -1};
+}
+```
+
 # 链表
 
 - 链表是一种通过指针串联在一起的线性结构，每一个节点由两部分组成，一个是数据域一个是指针域（存放指向下一个节点的指针），最后一个节点的指针域指向null（空指针的意思）。
+
 - 数组是在内存中是连续分布的，但是**链表**在内存中可**不是连续分布**的，分配机制取决于操作系统的内存管理。
+
 - 分类
+
   - 单链表
   - 双链表
   - 循环链表
@@ -543,9 +632,9 @@ return fast;
 - 直白来讲，数组就是一张哈希表：哈希表中关键码就是数组的索引下标，然后通过下标直接访问数组中的元素
 
 - **一般哈希表都是用来快速判断一个元素是否出现集合里**
-  
+
   - 要枚举的话时间复杂度是O(n)，但如果使用哈希表的话， 只需要O(1)就可以做到
-  
+
 - **哈希函数**
 
   - 把元素直接映射为哈希表上的索引
@@ -5798,6 +5887,14 @@ int main() {
 
 ```
 
+## MST时间复杂度
+
+| 算法         | 时间复杂度 | 核心操作              | 适用图类型     |
+| ------------ | ---------- | --------------------- | -------------- |
+| Prim（堆）   | O(E log V) | 堆操作（提取 / 更新） | 稀疏图（推荐） |
+| Prim（矩阵） | O(V²)      | 暴力遍历顶点          | 密集图         |
+| Kruskal      | O(E log E) | 排序和并查集          | 稀疏图（推荐） |
+
 ## 拓扑排序
 
 [卡码网：117. 软件构建](https://kamacoder.com/problempage.php?pid=1191)
@@ -6297,3 +6394,234 @@ int main() {
 **Floyd 算法对边的权值正负没有要求，都可以处理**。
 
 Floyd算法核心思想是**动态规划**。
+
+**`dp[i][j][k] = m`，表示 节点 i 到 节点 j 以 [1...k] 集合中的一个节点为中间节点的最短距离为m**。
+
+**递推公式：**
+
+我们分两种情况：
+
+1. 节点i 到 节点j 的最短路径经过节点k
+2. 节点i 到 节点j 的最短路径不经过节点k
+
+对于第一种情况，`grid[i][j][k] = grid[i][k][k - 1] + grid[k][j][k - 1]`
+
+节点i 到 节点k 的最短距离 是不经过节点k，中间节点集合为[1...k-1]，所以 表示为`grid[i][k][k - 1]`
+
+节点k 到 节点j 的最短距离 也是不经过节点k，中间节点集合为[1...k-1]，所以表示为 `grid[k][j][k - 1]`
+
+第二种情况，`grid[i][j][k] = grid[i][j][k - 1]`
+
+如果节点i 到 节点j的最短距离 不经过节点k，那么 中间节点集合[1...k-1]，表示为 `grid[i][j][k - 1]`
+
+因为我们是求最短路，对于这两种情况自然是取最小值。
+
+即： `grid[i][j][k] = min(grid[i][k][k - 1] + grid[k][j][k - 1]， grid[i][j][k - 1])`
+
+**初始化：**只能把k赋值为 0，本题 节点0 是无意义的，节点是从1到n。
+
+```c++
+vector<vector<vector<int>>> grid(n + 1, vector<vector<int>>(n + 1, vector<int>(n + 1, 10005)));  // C++定义了一个三位数组，10005是因为边的最大距离是10^4
+
+for(int i = 0; i < m; i++){
+    cin >> p1 >> p2 >> val;
+    grid[p1][p2][0] = val;
+    grid[p2][p1][0] = val; // 注意这里是双向图
+} 
+```
+
+**遍历顺序：**
+
+从递推公式：`grid[i][j][k] = min(grid[i][k][k - 1] + grid[k][j][k - 1]， grid[i][j][k - 1])` 可以看出，我们需要三个for循环，分别遍历i，j和k
+
+而 k 依赖于 k - 1， i 和 j 的到 并不依赖与 i - 1 或者 j - 1 等等。
+
+这就好比是一个三维坐标，i 和 j 是平层，而 k 是 垂直向上 的。
+
+遍历的顺序是从底向上 一层一层去遍历。
+
+所以遍历 k 的for循环一定是在最外面，这样才能一层一层去遍历。
+
+![image-20250316130309499](leetcode-master.assets/image-20250316130309499.png)
+
+```c++
+#include <iostream>
+#include <vector>
+#include <list>
+using namespace std;
+
+int main() {
+    int n, m, p1, p2, val;
+    cin >> n >> m;
+
+    vector<vector<vector<int>>> grid(n + 1, vector<vector<int>>(n + 1, vector<int>(n + 1, 10005)));  // 因为边的最大距离是10^4
+    for(int i = 0; i < m; i++){
+        cin >> p1 >> p2 >> val;
+        grid[p1][p2][0] = val;
+        grid[p2][p1][0] = val; // 注意这里是双向图
+
+    }
+    // 开始 floyd
+    for (int k = 1; k <= n; k++) {
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= n; j++) {
+                grid[i][j][k] = min(grid[i][j][k-1], grid[i][k][k-1] + grid[k][j][k-1]);
+            }
+        }
+    }
+    // 输出结果
+    int z, start, end;
+    cin >> z;
+    while (z--) {
+        cin >> start >> end;
+        if (grid[start][end][n] == 10005) cout << -1 << endl;
+        else cout << grid[start][end][n] << endl;
+    }
+}
+```
+
+**注意：**这里如果初始化不是10005，而是INT_MIN，则在`grid[i][j][k] = min(grid[i][j][k-1], grid[i][k][k-1] + grid[k][j][k-1]);`如果编译器不报错溢出，这里可能会出现两个INT_MIN相加变为-2（自己手算一下两个有符号数二进制相加即可），这样就是错的。如果初始化为10005，那么如果没有边相连，动规到最后，其值还是10005。
+
+### 空间优化
+
+用滚动数组优化，原本是个三维的立方体，每一层都是通过下一层的状态来计算，那么我们只需要两层交替计算即可。
+
+在进一步想，如果本层计算（本层计算即k相同，从三维角度来讲）` gird[i][j] `用到了 本层中刚计算好的` grid[i][k] `会有什么问题吗？
+
+如果 本层刚计算好的` grid[i][k] `比上一层 （即k-1层）计算的` grid[i][k] `小，说明确实有 i 到 k 的更短路径，那么基于 更小的` grid[i][k] `去计算` gird[i][j] `没有问题。
+
+如果 本层刚计算好的` grid[i][k] `比上一层 （即k-1层）计算的` grid[i][k] `大， 这不可能，因为这样也不会做更新` grid[i][k]`的操作。
+
+所以本层计算中，使用了本层计算过的` grid[i][k] 和 grid[k][j] `是没问题的。
+
+那么就没必要区分，`grid[i][k] 和 grid[k][j] `是 属于 k - 1 层的呢，还是 k 层的。
+
+所以递归公式可以为：
+
+```cpp
+grid[i][j] = min(grid[i][j], grid[i][k] + grid[k][j]);
+```
+
+所以只是用一个二维数组即可。
+
+```c++
+for (int k = 1; k <= n; k++) {
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= n; j++) {
+            grid[i][j] = min(grid[i][j], grid[i][k] + grid[k][j]);
+        }
+    }
+}
+```
+
+## Astar
+
+[卡码网：126. 骑士的攻击](https://kamacoder.com/problempage.php?pid=1203)
+
+棋子跳格子，第一个想法是bfs（dfs肯定不行，它找不了最小值），但是bfs一层层每一层会多很多步，成指数上升，会tle。
+
+Astar相比于bfs没有目的性地一圈圈去搜索，他是**有方向性地搜索**。其关键在于**启发式函数：**它能影响bfs队列中元素地顺序，这就能影响搜索地方向。
+
+每个节点的权值为F，给出公式为：**total = dist_start + dist_end**
+
+**dist_start：**起点达到目前遍历节点的**路程（注意是路程，不是直线距离）**
+
+**dist_end：**目前遍历的节点到达终点的**直线距离**
+
+起点达到目前遍历节点的距离 + 目前遍历的节点到达终点的距离 就是起点到达终点的距离。
+
+本题的图是无权网格状，在计算两点距离通常有如下三种计算方式：
+
+1. 曼哈顿距离，计算方式： d = abs(x1-x2)+abs(y1-y2)
+2. 欧氏距离（欧拉距离） ，计算方式：d = sqrt( (x1-x2)^2 + (y1-y2)^2 )
+3. 切比雪夫距离，计算方式：d = max(abs(x1 - x2), abs(y1 - y2))
+
+**使用欧氏距离，就是直线距离计算**
+
+因此每个坐标点的结构要保存若干东西，代码如下：
+
+```c++
+#include <bits/stdc++.h>
+using namespace std;
+
+int moves[1005][1005];  // 用来标记走到moves[x][y]位置需要几步
+
+const int dx[8] = {1, 1, 2, 2, -1, -1, -2, -2};
+const int dy[8] = {2, -2, 1, -1, 2, -2, 1, -1};
+
+// 每个位置的坐标，用于优化的三个距离
+// total = dist_start + dist_end
+// dist_start 不是欧拉距离（位移），是走的路径的距离（路程）
+// dist_end 是欧拉距离：该点到终点的直线距离
+struct Node{
+    int x, y;
+    int total, dist_start, dist_end;
+};
+
+// 用于制造优先队列，小顶堆
+class MyCmp{
+    public:
+        bool operator()(const Node& a, const Node& b) {
+            return a.total > b.total;
+        }
+};
+
+// 计算欧拉距离
+int CalculateDistance(const Node& a, int endx, int endy) {
+    return (a.x - endx) * (a.x - endx) + (a.y - endy) * (a.y - endy);
+}
+
+int main() {
+    int n, a1, a2, b1, b2;
+    cin >> n;
+    while (n--) {
+        memset(moves, 0, sizeof(moves));  // 每次新的任务要重置moves
+        cin >> a1 >> a2 >> b1 >> b2;
+        priority_queue<Node, vector<Node>, MyCmp> pq;  // 小顶堆的优先队列
+        Node start;  // 起始点
+        start.x = a1;
+        start.y = a2;
+        start.dist_start = 0;
+        start.dist_end = CalculateDistance(start, b1, b2);
+        start.total = start.dist_end;
+        pq.push(start);
+        Node cur, next;
+        while (!pq.empty()) {
+            cur = pq.top();
+            pq.pop();
+            if (cur.x == b1 && cur.y == b2) break;  // 终点
+            for (int i = 0; i < 8; i++) {
+                next.x = cur.x + dx[i];
+                next.y = cur.y + dy[i];
+                if (next.x < 1 || next.x > 1000 || next.y < 1 || next.y > 1000) continue;
+                if (moves[next.x][next.y] != 0) continue;  // 如果走到moves[x][y]位置需要几步已经记录，就不要更新了
+                moves[next.x][next.y] = moves[cur.x][cur.y] + 1;
+                next.dist_start = cur.dist_start + 5;  // 走的是马的格子，所以每次路程增加为马走日: 1 ^ 2 + 2 ^ 2，不开方了方便点
+                next.dist_end = CalculateDistance(next, b1, b2);
+                next.total = next.dist_end + next.dist_start;
+                pq.push(next);
+            }
+        }
+        cout << moves[b1][b2] << endl;
+    }
+    system("pause");
+    return 0;
+}
+```
+
+## 最短路径总结
+
+- 遇到**单源且权值全为正，使用dijkstra**，建议直接使用堆优化版本。
+- 如果遇到**单源边可为负数，直接 Bellman-Ford**，建议直接使用优化版本
+- 如果有**负权回路，优先 Bellman-Ford**
+- 如果是遇到**多源点求最短路，直接 Floyd**
+
+| 算法                       | 时间复杂度    | 核心操作              | 适用场景         |
+| -------------------------- | ------------- | --------------------- | ---------------- |
+| Dijkstra                   | O(V²)         | 遍历邻接矩阵所有顶点  | 密集图           |
+| Dijkstra（堆优化+邻接表）  | O(E log V)    | 堆操作（提取 / 更新） | 稀疏图（非负权） |
+| Bellman-Ford               | O(VE)         | 边松弛                | 含负权边的稀疏图 |
+| SPFA（Bellman-Ford优化版） | O (E)（平均） | 队列优化松弛          | 含负权边的稀疏图 |
+| Floyd                      | O(V³)         | 动态规划三重循环      | 顶点数少的密集图 |
+
+- Astar用在现实设计中比较多，性能好，但是不准确
