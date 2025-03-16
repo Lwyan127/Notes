@@ -471,16 +471,15 @@ struct test3{
 }test4;
 ```
 
-- **在c语言中**
-  - **`typedef` 的作用**：在 C 语言里，`typedef` 关键字用于为已有的数据类型创建一个新的类型别名。在这段代码中，`typedef` 为 `struct test3` 这个结构体类型定义了一个新的名称 `test4`。
-  - 类型使用方式：
-    - 若要声明 `struct test3` 类型的变量，有两种方式。一是使用完整的结构体类型名，如 `struct test3 var1;`；二是使用 `typedef` 定义的别名，如 `test4 var2;`。
-    - 这里 `test4` 就相当于 `struct test3` 的别名，可直接用于变量声明，而无需每次都写 `struct` 关键字。
-- **在c++中**
-  - **无 `typedef` 的情况**：在 C++ 中，结构体类型的使用更为简洁。当定义结构体时，若不使用 `typedef`，`struct` 关键字后面的标识符（如 `test3`）本身就直接成为了一个可用的类型名。
-  - 类型使用方式：
-    - 可以直接使用 `test3` 来声明变量，例如 `test3 var3;`。
-    - 代码中的 `test4` 实际上是一个 `struct test3` 类型的变量实例，而非类型别名。这和 C 语言中使用 `typedef` 定义别名的效果是不同的。
+- **在 C 语言中**
+  - **`struct`**：定义类型后，使用时需要加上 `struct` 关键字，例如 `struct Person p;`。
+  - **`typedef struct`**：可以为 `struct` 类型定义一个别名，使用时不需要加上 `struct` 关键字，例如 `typedef struct { ... } Person;` 后可以直接使用 `Person p;`。
+- **在 C++ 中**
+  - **`struct`**：可以直接使用定义的类型名来创建对象，例如 `struct Person { ... }; Person p;`。
+  - **`typedef struct`**：虽然也可以使用，但通常不需要，因为 C++ 已经支持直接使用 `struct` 类型名。
+- **其他：**
+  - 在 C++ 中，`struct` 功能更强大，**可以包含成员函数**，使用时不需要额外的 `typedef`。
+  - 在 C 语言中，`typedef struct` 是一种简化 `struct` 类型使用的常用方法。
 
 https://github.com/guaguaupup/cpp_interview/blob/main/C%2B%2B.md
 
