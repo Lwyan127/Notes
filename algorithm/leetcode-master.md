@@ -181,7 +181,7 @@ public:
 int getRightBorder(vector<int>& nums, int target) {
     int left = 0;
     int right = nums.size() - 1; // 定义target在左闭右闭的区间里，[left, right]
-    int rightBorder = -2; // 记录一下rightBorder没有被赋值的情况
+    int rightBorder = -100; // 记录一下rightBorder没有被赋值的情况
     while (left <= right) { // 当left==right，区间[left, right]依然有效
         int middle = left + ((right - left) / 2);// 防止溢出 等同于(left + right)/2
         if (nums[middle] > target) {
@@ -191,7 +191,7 @@ int getRightBorder(vector<int>& nums, int target) {
             rightBorder = left;
         }
     }
-    return rightBorder;  // 返回的是[left, right]中left再左边一位 或者 -2
+    return rightBorder;  // 返回的是[left, right]中left再左边一位 或者 -100 如果返回[left, right] 中的left/right的话，就不是-100了，而是-99和-101
 }
 ```
 
@@ -204,13 +204,17 @@ vector<int> searchRange(vector<int>& nums, int target) {
     int leftBorder = getLeftBorder(nums, target);
     int rightBorder = getRightBorder(nums, target);
     // 情况一
-    if (leftBorder == -2 || rightBorder == -2) return {-1, -1};
+    if (leftBorder == -100 || rightBorder == -100) return {-1, -1};
     // 情况三
     if (rightBorder - leftBorder > 1) return {leftBorder + 1, rightBorder - 1};
     // 情况二
     return {-1, -1};
 }
 ```
+
+## [922. 按奇偶排序数组 II](https://leetcode.cn/problems/sort-array-by-parity-ii/)
+
+空间O(n)的话，每次遇到位置不对的就往后找到另一个奇偶相反的看能不能互换，这样时间不是O(n^2)，时间也是O(n)，因为偶数位和奇数位都只操作一次，不是n/2 * n/2的关系，而是n/2 + n/2的关系！
 
 # 链表
 
@@ -623,7 +627,15 @@ return fast;
 - 记得使用虚拟头节点
 - 使用双指针法，这样可以将很多递归变成迭代
 
-![img](leetcode-master.assets/68747470733a2f2f636f64652d7468696e6b696e672d313235333835353039332e66696c652e6d7971636c6f75642e636f6d2f706963732f2545392539332542452545382541312541382545362538302542422545372542422539332e706e67.png)
+![img](leetcode-master.assets/linklist.png)
+
+## [234. 回文链表](https://leetcode.cn/problems/palindrome-linked-list/)
+
+空间O(1)就是双指针找到中点，然后后半翻转链表，最后和前半比较。
+
+## [143. 重排链表](https://leetcode.cn/problems/reorder-list/)
+
+快慢指针找到中点。后半翻转。前半和后半合并。
 
 # 哈希表
 
@@ -1060,6 +1072,18 @@ public:
     }
 };
 ```
+
+## [205. 同构字符串](https://leetcode.cn/problems/isomorphic-strings/)
+
+记得s与t同构，则字符全是相互对应的，s[i]对应t[i]且t[i]对应s[i]，所以要使用两个map
+
+## [925. 长按键入](https://leetcode.cn/problems/long-pressed-name/)
+
+特殊情况：`name = "alex", typed = "aaleexa"`要考虑到
+
+## [844. 比较含退格的字符串](https://leetcode.cn/problems/backspace-string-compare/)
+
+简单。
 
 # 栈与队列
 
@@ -2827,6 +2851,22 @@ public:
 
 ![image-20240713195159133](leetcode-master.assets/image-20240713195159133.png)
 
+## [129. 求根节点到叶节点数字之和](https://leetcode.cn/problems/sum-root-to-leaf-numbers/)
+
+前序遍历做一遍，简单。
+
+## [1382. 将二叉搜索树变平衡](https://leetcode.cn/problems/balance-a-binary-search-tree/)
+
+不要尝试将原本的二叉树通过什么rr，ll旋转之类的来变成平衡二叉树。
+
+将原本的树的所有值保存下来，然后造一棵二叉搜索树，这才是正解。
+
+## [100. 相同的树](https://leetcode.cn/problems/same-tree/)
+
+so easy.
+
+
+
 # 回溯
 
 - 回溯函数也就是**递归**函数
@@ -3314,6 +3354,10 @@ public:
     }
 };
 ```
+
+## [52. N 皇后 II](https://leetcode.cn/problems/n-queens-ii/)
+
+和上一题基本一样。在这种题目里，注意使用引用来减少栈上的局部变量，防止sof。
 
 ## [37. 解数独](https://leetcode.cn/problems/sudoku-solver/)
 
@@ -3975,6 +4019,14 @@ public:
     }
 };
 ```
+
+## [649. Dota2 参议院](https://leetcode.cn/problems/dota2-senate/)
+
+贪心：每个议员直接ban后面第一个敌方单位。解释：尽量消灭自己后面的对手，因为前面的对手已经使用过权利了，而后序的对手依然可以使用权利消灭自己的同伴！
+
+## [1221. 分割平衡字符串](https://leetcode.cn/problems/split-a-string-in-balanced-strings/)
+
+简单的贪心模拟。
 
 # 动态规划
 
@@ -5210,6 +5262,10 @@ public:
 
 ![image-20250307214930832](leetcode-master.assets/image-20250307214930832.png)
 
+## [5. 最长回文子串](https://leetcode.cn/problems/longest-palindromic-substring/)
+
+和[647.回文子串](https://programmercarl.com/0647.回文子串.html)差不多。
+
 # 图论
 
 ## 深度优先搜索dfs
@@ -5806,6 +5862,8 @@ int main() {
 ```
 
 ## Kruskal：最短边，边少使用
+
+[卡码网：53. 寻宝](https://kamacoder.com/problempage.php?pid=1053)
 
 要判断当前最短边的两个顶点在不在同一MST上，用**并查集**判断。
 
