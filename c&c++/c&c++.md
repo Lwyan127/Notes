@@ -922,8 +922,8 @@ int main () {
     s.insert(0, "hello world", 3);
 
     // 在下标为0的位置插入一个字符x
-    s.insert(0, 1, 'x');
-    s.insert(s.begin(), 'x');
+    s.insert(0, 1, 'x');  // 注意插入字符时，要写下标的起始位置和终止位置
+    s.insert(s.begin(), 'x');  // 或者用迭代器
 
     // 在下标为0的位置插入三个字符x
     s.insert(0, 3, 'x');
