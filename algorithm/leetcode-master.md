@@ -5266,6 +5266,81 @@ public:
 
 和[647.回文子串](https://programmercarl.com/0647.回文子串.html)差不多。
 
+## [132. 分割回文串 II](https://leetcode.cn/problems/palindrome-partitioning-ii/)
+
+递推公式有点难想。
+
+**dp[i]：**范围是[0, i]的回文子串，最少分割次数是dp[i]。
+
+**递推公式：**
+
+如果要对长度为[0, i]的子串进行分割，分割点为j。
+
+那么如果分割后，区间[j + 1, i]是回文子串，那么dp[i] 就等于 dp[j] + 1。
+
+**dp[i] = min(dp[i], dp[j] + 1);**，注意这里不是要 dp[j] + 1 和 dp[i]去比较，而是要在遍历j的过程中取最小的dp[i]！
+
+```c++
+for (int i = 1; i < s.size(); i++) {
+    if (isPalindromic[0][i]) { // 判断是不是回文子串
+        dp[i] = 0;
+        continue;
+    }
+    for (int j = 0; j < i; j++) {
+        if (isPalindromic[j + 1][i]) {
+            dp[i] = min(dp[i], dp[j] + 1);
+        }
+    }
+}
+```
+
+这个`isPalindromic[i][j]`是[647. 回文子串](https://programmercarl.com/0647.回文子串.html)的代码。不过这道题你直接判断是否是回文串也能ac。
+
+**初始化：**dp[0] = 0; 看公式由min取较小值可知需要初始化为最大值。
+
+```c++
+vector<int> dp(s.size(), INT_MAX);
+dp[0] = 0;
+```
+
+## [673. 最长递增子序列的个数](https://leetcode.cn/problems/number-of-longest-increasing-subsequence/)
+
+这道题需要使用两个数组。
+
+**dp[i]：**i之前（包括i）最长递增子序列的长度为dp[i]
+
+**count[i]：**以nums[i]为结尾的字符串，最长递增子序列的个数为count[i]
+
+**递推公式：**
+
+以nums[i]为结尾的字符串，最长递增子序列的个数为count[i]。
+
+那么在nums[i] > nums[j]前提下，如果在[0, i-1]的范围内，找到了j，使得dp[j] + 1 > dp[i]，说明找到了一个更长的递增子序列。
+
+那么以j为结尾的子串的最长递增子序列的个数，就是最新的以i为结尾的子串的最长递增子序列的个数，即：count[i] = count[j]。
+
+在nums[i] > nums[j]前提下，如果在[0, i-1]的范围内，找到了j，使得dp[j] + 1 == dp[i]，说明找到了两个相同长度的递增子序列。
+
+那么以i为结尾的子串的最长递增子序列的个数 就应该加上以j为结尾的子串的最长递增子序列的个数，即：count[i] += count[j];
+
+```c++
+if (nums[i] > nums[j]) {
+    if (dp[j] + 1 > dp[i]) {
+        dp[i] = dp[j] + 1; // 更新dp[i]放在这里，就不用max了
+        count[i] = count[j];
+    } else if (dp[j] + 1 == dp[i]) {
+        count[i] += count[j];
+    }
+}
+```
+
+**初始化：**
+
+```c++
+vector<int> dp(nums.size(), 1);
+vector<int> count(nums.size(), 1);
+```
+
 # 图论
 
 ## 深度优先搜索dfs
