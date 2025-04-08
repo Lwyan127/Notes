@@ -245,3 +245,108 @@ public:
 
 这里为了优化，使用shared_ptr为共享内存，减少不必要的数组的复制。可以看到都是直接用地址，而不是用参数，如`for (const string& left : *lefts)`
 
+## [208. 实现 Trie (前缀树)](https://leetcode.cn/problems/implement-trie-prefix-tree/)
+
+Trie的节点：
+
+```c++
+struct TrieNode {
+    bool isEnd; //该结点是否是一个串的结束
+    TrieNode* next[26]; //字母映射表
+};
+```
+
+`TrieNode* next[26]`中保存了对当前结点而言下一个可能出现的所有字符的链接，因此我们可以通过一个父结点来预知它所有子结点的值：
+
+```c++
+for (int i = 0; i < 26; i++) {
+    char ch = 'a' + i;
+    if (parentNode->next[i] == NULL) {
+        说明父结点的后一个字母不可为 ch
+    } else {
+        说明父结点的后一个字母可以是 ch
+    }
+}
+```
+
+包含三个单词 "sea","sells","she" 的 Trie 会长啥样呢？它的真实情况是这样的：
+
+![image-20250408174251757](leetcodeQuestions.assets/image-20250408174251757.png)
+
+Trie 中一般都含有大量的空链接，因此在绘制一棵单词查找树时一般会忽略空链接，同时为了方便理解我们可以画成这样：
+
+![image-20250408174308794](leetcodeQuestions.assets/image-20250408174308794.png)
+
+定义类：
+
+```c++
+class Trie {
+private:
+    bool isEnd;
+    Trie* next[26];
+public:
+    //方法将在下文实现...
+};
+```
+
+其他的所有操作：
+
+```c++
+class Trie {
+public:
+    Trie() {  // 构造函数
+        isEnd = false;
+        memset(next, 0, sizeof(next));
+    }
+    
+    void insert(string word) {  // 插入一个单词
+        Trie* node = this;
+        for (char c: word) {
+            if (node->next[c - 'a'] == NULL) {
+                node->next[c - 'a'] = new Trie();
+            }
+            node = node->next[c - 'a'];
+        }
+        node->isEnd = true;
+    }
+    
+    bool search(string word) {  // 查找一个单词在不在
+        Trie* node = this;
+        for (char c: word) {
+            if (node->next[c - 'a'] == NULL) {
+                return false;
+            }
+            node = node->next[c - 'a'];
+        }
+        if (node->isEnd == false) return false;
+        return true;
+    }
+    
+    bool startsWith(string prefix) {  // 查找是否有单词存在该前缀
+        Trie* node = this;
+        for (char c: prefix) {
+            if (node->next[c - 'a'] == NULL) {
+                return false;
+            }
+            node = node->next[c - 'a'];
+        }
+        return true;
+    }
+
+private:
+    bool isEnd;
+    Trie* next[26];
+};
+```
+
+## [394. 字符串解码](https://leetcode.cn/problems/decode-string/)
+
+显然用栈做，但是仔细写起来不好写。要满足下面这几个输出：
+
+```
+"3[a]2[bc]"
+"3[a2[c]]"
+"qwe2[abc]3[cd]ef"
+```
+
+如果写不出，就看看答案怎么写的。
