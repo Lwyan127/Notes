@@ -3037,3 +3037,48 @@ int main() {
 **如果你有指针，使用 `->`**。
 
 **如果是迭代器（如 `std::map<int, string>::iterator`），通常使用 `->`**（因为迭代器返回的是 `std::pair<int, T>*`）。
+
+
+
+# 构造函数的参数和私有变量冲突
+
+```c++
+private:
+    vector<int> nums;
+    vector<int> tree;
+public:    
+    NumArray(vector<int> &nums) : nums(nums.size()), tree(nums.size() + 1) {
+        for (int i = 0; i < nums.size(); i++) {
+            update(i, nums[i]);
+        }
+    }
+```
+
+在这段代码中，`NumArray` 类有两个私有成员变量 `nums` 和 `tree`。构造函数 `NumArray(vector<int> &nums)` 接收一个名为 `nums` 的引用参数，这就和类的私有成员变量 `nums` 产生了命名冲突。
+
+### 初始化列表中的作用域规则
+
+在初始化列表 `: nums(nums.size()), tree(nums.size() + 1)` 里，冒号后面的 `nums` 指的是类的私有成员变量 `nums`，而括号内的 `nums` 指的是构造函数的参数 `nums`。所以，`nums(nums.size())` 表示用参数 `nums` 的大小来初始化私有成员变量 `nums`，也就是创建一个大小和参数 `nums` 相同的 `std::vector<int>` 对象。
+
+### 构造函数体中的作用域规则
+
+在构造函数体 `for (int i = 0; i < nums.size(); i++) { update(i, nums[i]); }` 里，`nums` 指的是构造函数的参数 `nums`。这是因为在构造函数体里，参数 `nums` 的作用域会覆盖类的私有成员变量 `nums`。
+
+### 构造函数体
+
+在构造函数体中，默认情况下，参数的作用域会覆盖私有变量，所以直接使用该名字时访问的是构造函数的参数。不过，你可以通过 `this` 指针来访问私有变量。
+
+```c++
+class Example {
+private:
+    std::vector<int> nums;
+public:
+    Example(std::vector<int> &nums) : nums(nums.size()) {
+        // 直接使用 nums，访问的是构造函数的参数
+        std::cout << "参数 nums 的大小: " << nums.size() << std::endl;
+        // 使用 this 指针访问私有成员变量
+        std::cout << "私有成员变量 nums 的大小: " << this->nums.size() << std::endl;
+    }
+};
+```
+
