@@ -96,3 +96,119 @@ public:
 };
 ```
 
+## [2179. 统计数组中好三元组数目](https://leetcode.cn/problems/count-good-triplets-in-an-array/)
+
+难题，思考量很大。
+
+题目本质上是求：nums1 和 nums2 的长度恰好为 3 的**公共子序列**的个数。
+
+如果使用 [1143. 最长公共子序列](https://leetcode.cn/problems/longest-common-subsequence/)则需要n*n的dp数组，时间为O(n^2^)，太大了。
+
+因为0-n每个数只出现过一次，这道题使用**置换的办法将公共子序列变成递增子序列**的问题。
+
+把 nums1=[4,0,1,3,2] 中的每个元素置换，变为nums1=[0,1,2,3,4]。根据这个置换，修改nums2: nums2=[0,2,1,4,3]。由此这是一个递增子序列的问题：即求在nums2中有多少个长度为3的递增子序列。
+
+**长度为3的递增子序列**：
+
+对中间的数nums2[i]枚举：在nums2中它左边且小于它的个数记为less，则右边比他大的个数为n - 1- nums2[i] - (i - less)个，根据乘法原理，两个相乘就是中间的数为num2[i]的递增子序列的个数。
+
+现在只需要求less了：使用**值域树状数组**，值域树状数组的意思是，把元素值视作下标。添加一个值为 3 的数，就是调用树状数组的 update(3,1)，3为下标idx，1为值val。查询小于 3 的元素个数，即小于等于 2 的元素个数，就是调用树状数组的 prefixSum(2)。
+
+```c++
+class Solution {
+private:
+    vector<int> original_nums;
+    vector<int> bit;
+
+    inline int lowbit(int x) {
+        return x & (-x);
+    }
+
+    int prefixSum(int idx) {
+        idx++;
+        int sum = 0;
+        while (idx > 0) {
+            sum += bit[idx];
+            idx -= lowbit(idx);
+        }
+        return sum;
+    }
+
+    void update(int idx, int val) {
+        int delta = val - original_nums[idx];
+        original_nums[idx] = val;
+        idx++;
+        while (idx < bit.size()) {
+            bit[idx] += delta;
+            idx += lowbit(idx);
+        }
+        return;
+    }
+
+    long long IncreasedSequencesOfThree(vector<int>& nums) {
+        long long ans = 0;
+        bit.resize(nums.size() + 1, 0);
+        original_nums.resize(nums.size(), 0);
+        int less;
+        for (int i = 0; i < nums.size(); i++) {
+            less = prefixSum(nums[i] - 1);
+            ans += less * (nums.size() - 1 - nums[i] - (i - less));
+            update(nums[i], 1);
+        }
+        return ans;
+    }
+
+public:
+    long long goodTriplets(vector<int>& nums1, vector<int>& nums2) {
+        int n = nums1.size();
+        vector<int> pos(n);
+        for (int i = 0; i < n; i++) {
+            pos[nums1[i]] = i;
+        }
+        for (int i = 0; i < n; i++) {
+            nums2[i] = pos[nums2[i]];
+        }
+        return IncreasedSequencesOfThree(nums2);
+    }
+};
+```
+
+## [2537. 统计好子数组的数目](https://leetcode.cn/problems/count-the-number-of-good-subarrays/)
+
+**滑动数组**：也有点难度，要好好想想。
+
+**核心思路**：
+
+- 如果窗口中有 c 个元素 x，再进来一个 x，会新增 c 个相等数对。
+
+- 如果窗口中有 c 个元素 x，再去掉一个 x，会减少 c−1 个相等数对。
+
+外层循环：从小到大枚举子数组右端点 right。现在准备把 x=nums[right] 移入窗口，那么窗口中有 cnt[x] 个数和 x 相同，所以 pairs 会增加 cnt[x]。然后把 cnt[x] 加一。
+
+内层循环：如果发现 pairs≥k，说明子数组符合要求，右移左端点 left，先把 cnt[nums[left]] 减少一，然后把 pairs 减少 cnt[nums[left]]。
+
+内层循环结束后，[left,right] 这个子数组是不满足题目要求的，但在退出循环之前的最后一轮循环，[left−1,right] 是满足题目要求的。由于子数组越长，越能满足题目要求，所以除了 [left−1,right]，还有 [left−2,right],[left−3,right],…,[0,right] 都是满足要求的。也就是说，当右端点固定在 right 时，左端点在 0,1,2,…,left−1 的所有子数组都是满足要求的，这一共有 left 个。
+
+```c++
+class Solution {
+public:
+    long long countGood(vector<int>& nums, int k) {
+        long long ans = 0;
+        int left = 0;
+        unordered_map<int, int> hash;
+        int pairs = 0;
+        for (int right = 0; right < nums.size(); right++) {
+            pairs += hash[nums[right]];
+            hash[nums[right]]++;
+            while (pairs >= k) {
+                hash[nums[left]]--;
+                pairs -= hash[nums[left]];
+                left++;
+            }
+            ans += left;
+        }
+        return ans;
+    }
+};
+```
+
