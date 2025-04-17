@@ -711,6 +711,10 @@ void Query(int no, int l, int r, int tree[], int lazy[], int x, int y, int* ans)
 
 # 树状数组
 
+![image-20250417102333680](algorithm.assets/image-20250417102333680.png)
+
+![image-20250417102351710](algorithm.assets/image-20250417102351710.png)![image-20250417102403490](algorithm.assets/image-20250417102403490.png)![image-20250417102414531](algorithm.assets/image-20250417102414531.png)
+
 ```cpp
 #define LOWBIT(x) (x & (-x))
 
