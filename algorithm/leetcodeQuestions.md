@@ -49,3 +49,50 @@ public:
 };
 ```
 
+## [307. 区域和检索 - 数组可修改](https://leetcode.cn/problems/range-sum-query-mutable/)
+
+相见algorithm.md中的树状数组。
+
+```c++
+class NumArray {
+private: 
+    vector<int> tree;
+    vector<int> original_nums;
+    
+    inline int lowbit(int x) {
+        return x & (-x);
+    }
+
+    int getPrefixSum(int x) {
+        int sum = 0;
+        while (x > 0) {
+            sum += tree[x];
+            x -= lowbit(x);
+        }
+        return sum;
+    }
+
+public:
+    NumArray(vector<int>& nums): original_nums(nums.size(), 0), tree(nums.size() + 1, 0) {
+        for (int i = 0; i < nums.size(); i++) {
+            update(i, nums[i]);
+        }
+    }
+    
+    void update(int index, int val) {
+        int delta = val - original_nums[index];
+        original_nums[index] = val;
+        index++;
+        while (index <= original_nums.size()) {
+            tree[index] += delta;
+            index += lowbit(index);
+        }
+        return;
+    }
+    
+    int sumRange(int left, int right) {
+        return getPrefixSum(right + 1) - getPrefixSum(left);
+    }
+};
+```
+
