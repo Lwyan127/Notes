@@ -1658,6 +1658,7 @@ a.reserve(100);  // 将a的容量（capacity）扩充至100，也就是说现在
 a.swap(b);  // b为向量，将a中的元素和b中的元素进行整体性交换
 
 a == b;  // b为向量，向量的比较操作还有!=,>=,<=,>,<
+// 对于vector容器，==运算符是被重载过的。当两个vector的元素数量相同，并且对应位置的元素都相等时，就会返回true
 ```
 
 ## 添加元素
@@ -2960,7 +2961,66 @@ int main() {
 | **swap**       | 交换两个list中的元素                        |
 | **clear**      | 清空list中的有效元素                        |
 
+# array
 
+- 由于对于数组来说，越界时（比如a[10]，我取到了a[11]），在一些编译器上是不会报错的，因此可能直接用数组/vector会有问题，而使用array则能保证不会越界，**越界了会报错**。
+
+- `<array>` 需要在编译时确定大小，**大小不能动态改变**。
+
+- ```c++
+  #include <iostream>
+  #include <array>
+  using namespace std;
+  
+  int main() {
+      // 创建一个包含 5 个整数的 array，这是固定的大小
+      array<int, 5> myArray = {1, 2, 3, 4, 5};
+  
+      // 使用范围 for 循环遍历数组
+      for (auto value : myArray) {
+          cout << value << " ";
+      }
+      cout << endl;
+  
+      // 使用索引访问数组元素
+      cout << "Element at index 2: " << myArray.at(2) << endl;
+  
+      // 获取数组的大小
+      cout << "Array size: " << myArray.size() << endl;
+  
+      // 修改数组元素
+      myArray[3] = 10;
+  
+      // 再次遍历数组以显示修改后的元素
+      for (auto value : myArray) {
+          cout << value << " ";
+      }
+      cout << endl;
+  
+      return 0;
+  }
+  ```
+
+  ```c++
+  1 2 3 4 5 
+  Element at index 2: 3
+  Array size: 5
+  1 2 3 10 5 
+  ```
+
+- | 函数                   | 说明                             |
+  | :--------------------- | :------------------------------- |
+  | `at(size_t pos)`       | 返回指定位置的元素，带边界检查   |
+  | `operator[]`           | 返回指定位置的元素，不带边界检查 |
+  | `front()`              | 返回数组的第一个元素             |
+  | `back()`               | 返回数组的最后一个元素           |
+  | `data()`               | 返回指向数组数据的指针           |
+  | `size()`               | 返回数组大小（固定不变）         |
+  | `fill(const T& value)` | 将数组所有元素设置为指定值       |
+  | `swap(array& other)`   | 交换两个数组的内容               |
+  | `begin()` / `end()`    | 返回数组的起始/结束迭代器        |
+
+https://blog.csdn.net/qq_68695298/article/details/130484428
 
 # 关于auto使用
 
