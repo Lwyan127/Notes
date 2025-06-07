@@ -219,3 +219,16 @@ public:
 ## [3403. 从盒子中找出字典序最大的字符串 I](https://leetcode.cn/problems/find-the-lexicographically-largest-string-from-the-box-i/)
 
 暴力枚举即可。注意numFriends为1时的情况。
+
+## [1061. 按字典序排列最小的等效字符串](https://leetcode.cn/problems/lexicographically-smallest-equivalent-string/)
+
+复习了并查集，这道题只需要在union的时候保证并查集的根为字典序最小即可。
+
+## [3170. 删除星号以后字典序最小的字符串](https://leetcode.cn/problems/lexicographically-minimum-string-after-removing-stars/)
+
+使用一个哈希表来记录即可。直接使用map可以用m.begin()直接得到哈希表中最小key，map自动按照key升序排列。
+
+```
+map<char, stack<int>> m;
+```
+
