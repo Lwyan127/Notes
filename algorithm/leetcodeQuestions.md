@@ -232,3 +232,61 @@ public:
 map<char, stack<int>> m;
 ```
 
+## [386. 字典序排数](https://leetcode.cn/problems/lexicographical-numbers/)
+
+这实际上是一个深度优先搜索。因此，使用递归：
+
+```c++
+class Solution {
+public:
+    void getAns(int x, int n) {
+        x *= 10;
+        if (x > n) return;
+        for (int i = 0; i <= 9; i++) {
+            if (x + i > n) return;
+            ans.emplace_back(x + i);
+            getAns(x + i, n);
+        }
+        return;
+    }
+
+    vector<int> lexicalOrder(int n) {
+        for (int i = 1; i <= 9; i++) {
+            if (i > n) return ans;
+            ans.emplace_back(i);
+            getAns(i, n);
+        }
+        return ans;
+    }
+
+private:
+    vector<int> ans;
+};
+```
+
+题目要求使用O(1)，因此可以直接按照排序的逻辑来完成这个
+
+```c++
+class Solution {
+public:
+    vector<int> lexicalOrder(int n) {
+        int x = 1;
+        for (int i = 0; i < n; i++) {
+            ans.emplace_back(x);
+            if (10 * x <= n) {
+                x *= 10;
+            } else {
+                while (x % 10 == 9 || x + 1 > n) {
+                    x /= 10;
+                }
+                x++;
+            }
+        }
+        return ans;
+    }
+
+private:
+    vector<int> ans;
+};
+```
+
