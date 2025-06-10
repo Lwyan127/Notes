@@ -224,6 +224,46 @@ public:
 
 复习了并查集，这道题只需要在union的时候保证并查集的根为字典序最小即可。
 
+## [2434. 使用机器人打印字典序最小的字符串](https://leetcode.cn/problems/using-a-robot-to-print-the-lexicographically-smallest-string/)
+
+这道题首先需要自己手写一遍，模拟出如何出栈入栈：问题相当于从左到右遍历 *s*，在允许用一个辅助栈的前提下，计算能得到的字典序最小的字符串。
+
+首先，要先将字符串的所有最小的字符都放入ans中（这个过程中会入栈若干非最小字符），然后看剩下的字符串中的最小值与栈顶相比较，谁小谁进ans。循环这个过程。
+
+其中，有个操作就是找到字符串的所有最小的字符，这就需要知道最小的字符是谁，和他们在哪里（或者最后一个在哪里也可以，因为遍历的时候遇到最小字符就能直接处理，遍历到最后一个就相当于知道了所有最小字符的位置，并且处理完了他们）。原本我使用了一个函数来单独遍历一遍，找最小字符，但是这样会超时。因此使用一个字符数组存储在这个位置之后的最小字符是谁，即一个**后缀字符数组**（思想有一点类似前缀和，前缀和相减能得到段和，这个后缀字符数组指示了当前有没有处理完所有的最小字符），这样就可以完成前面所说的功能。
+
+（上面说的有点乱，看不懂就直接理解代码）
+
+以 s=caba 为例。对于 s[1]=a，应该立刻出栈。如果不出栈，遍历到 s[3]=a 才出栈，那么结果是 abac，但正确答案是 aabc。在错误答案中，因为没有及时把 a 出栈，我们把更大的 b 插在了两个 a 中间。所以如果栈顶等于剩余字母（后缀 s[i+1:]）中的最小值，也应该立刻出栈。
+
+总结：如果栈顶 ≤ 剩余字母（后缀 s[i+1:]）中的最小值，就立刻出栈。
+
+```c++
+class Solution {
+public:
+    string robotWithString(string s) {
+        int n = s.size();	
+        // 计算后缀最小值
+        vector<char> suf_min(n + 1);
+        suf_min[n] = 'z';  // 这样方便找后缀最小值，并且后面要用到suf_min[n]，这样处理了边界
+        for (int i = n - 1; i >= 0; i--) {
+            suf_min[i] = min(suf_min[i + 1], s[i]);
+        }
+
+        string ans;
+        stack<char> st;
+        for (int i = 0; i < n; i++) {
+            st.push(s[i]);
+            while (!st.empty() && st.top() <= suf_min[i + 1]) {
+                ans += st.top();
+                st.pop();
+            }
+        }
+        return ans;
+    }
+};
+```
+
 ## [3170. 删除星号以后字典序最小的字符串](https://leetcode.cn/problems/lexicographically-minimum-string-after-removing-stars/)
 
 使用一个哈希表来记录即可。直接使用map可以用m.begin()直接得到哈希表中最小key，map自动按照key升序排列。
@@ -287,6 +327,67 @@ public:
 
 private:
     vector<int> ans;
+};
+```
+
+## [440. 字典序的第K小数字](https://leetcode.cn/problems/k-th-smallest-in-lexicographical-order/)
+
+上面一道题目的进化版本，数据给得很大。重新思考这道题，实际上，这个字典序是一个完全十叉树。排序就是使用先序遍历。现在题目就变成了完全十叉树找先序遍历的第k个位置，但是由于数据给的很大，不能先序遍历直接遍历找，因此我们需要计算每个叶子下有多少节点，然后一步步找。
+
+![image-20250610213032841](leetcodeQuestions.assets/image-20250610213032841.png)
+
+下面有一个例子：
+
+![image-20250610220413821](leetcodeQuestions.assets/image-20250610220413821.png)
+
+（上面写错了，最终prefix应该是228，在prefix=22乘10的时候剩下的值要多减1）根据上面的例子中的过程，我们需要构筑一个计算子树有多少元素的函数。
+
+```c++
+int numsOfTree(int n, long long prefix) {  // 注意使用long long，因为这下面有个乘10会超2^10
+    int cnt = 0;
+    long long next = prefix + 1;
+    while (prefix <= n) {
+        if (next < n + 1) cnt += next - prefix;
+        else cnt += n + 1 - prefix;
+        next *= 10;
+        prefix *= 10;
+    }
+    return cnt;
+}
+```
+
+整体代码：
+
+```c++
+class Solution {
+public:
+    int numsOfTree(int n, long long prefix) {
+        int cnt = 0;
+        long long next = prefix + 1;
+        while (prefix <= n) {
+            if (next < n + 1) cnt += next - prefix;
+            else cnt += n + 1 - prefix;
+            next *= 10;
+            prefix *= 10;
+        }
+        return cnt;
+    }
+
+    int findKthNumber(int n, int k) {
+        int prefix = 1;  // 作为一个指针，指向当前所在位置，当p == k时，也就是到了排位第k的数
+        int cnt = 1;
+        while (cnt < k) {
+            int num = numsOfTree(n, prefix);
+            if (cnt + num <= k) {
+                cnt += num;
+                prefix++;
+            } else if (cnt + num > k) {
+                cnt++;
+                prefix *= 10;
+            }
+        }
+        return prefix;
+    }
 };
 ```
 
