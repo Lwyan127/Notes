@@ -2611,7 +2611,52 @@ heihei 5
 
 https://zhuanlan.zhihu.com/p/482540092
 
+# tuple
 
+std::tuple 在 C++11 引入，用于将不同类型的数据组合成一个单一的对象。它类似于 std::pair，但可以包含任意数量的元素（包括零个）。
+
+- 定义：std::tuple 是一个模板类，可以存储固定数量的、不同类型的数据元素。
+
+- 头文件：#include <tuple>
+- 编译时确定大小：tuple 的大小（即包含的元素个数）在编译时就已经完全确定，并且不可改变。它不是动态容器。
+
+```cpp
+#include <tuple>
+#include <string>
+
+// 直接初始化  
+std::tuple<int, double, std::string> t1(10, 3.14, "hello");
+
+// 使用make_tuple自动推导类型  
+auto t2 = std::make_tuple(20, 6.28, "world");
+
+// 空tuple  
+std::tuple<> empty_tuple;
+
+int i = std::get<0>(t1);       // 获取第一个元素  
+double d = std::get<1>(t1);    // 获取第二个元素  
+std::string s = std::get<2>(t1); // 获取第三个元素  
+
+std::get<0>(t1) = 100;  // 修改第一个元素  
+
+constexpr size_t size = std::tuple_size<decltype(t1)>::value;
+// size等于3（因为t1有3个元素）
+
+// 解包 C++17 结构化绑定
+auto [a, b, c] = t1;  // a=10, b=3.14, c="hello"
+
+// 解包 C++17 前使用 std::tie
+int x;  
+double y;  
+std::string z;  
+std::tie(x, y, z) = t1;  // x=10, y=3.14, z="hello"
+
+// 拼接tuple
+auto combined = std::tuple_cat(t1, t2); 
+// combined包含6个元素：10, 3.14, "hello", 20, 6.28, "world"
+```
+
+原文链接：https://blog.csdn.net/qq_44431690/article/details/151255100
 
 # STL
 
@@ -2791,6 +2836,7 @@ myDeque.erase(first, last); // 删除第二个到第四个元素
 ## priority_queue优先队列
 
 - 优先队列（priority_queue）是一个非常有用的容器适配器。它提供了一种特殊的队列，其中的元素按照一定的优先级进行排序和访问。
+- **默认使用降序，从大到小，如果是pair或者tuple，则从第一个元素开始降序，如果元素大小相同，再比较第二个元素**
 
 **1.包含头文件及初始化**
 
@@ -2804,6 +2850,7 @@ myDeque.erase(first, last); // 删除第二个到第四个元素
 
 ```c++
 priority_queue<int> myQueue; // 声明一个空的整数优先队列
+// 这时候默认使用降序
 ```
 
 3）也可以使用已有的容器初始化优先队列对象：
@@ -3147,5 +3194,32 @@ public:
         std::cout << "私有成员变量 nums 的大小: " << this->nums.size() << std::endl;
     }
 };
+```
+
+# 结构化绑定
+
+C++17 引入的**结构化绑定（Structured Bindings）** 是一项语法特性，允许将数组、结构体、tuple 等复合类型的成员 “解包” 到多个变量中，简化代码并提升可读性。
+
+```cpp
+auto [var1, var2, ...] = 复合类型;
+```
+
+- `auto`根据右侧类型自动推导变量类型。
+- `[var1, var2, ...]`中的变量数量必须与复合类型的成员数量一致。
+
+对比：
+
+```cpp
+// 传统方法
+std::pair<std::string, int> get_data() {
+    return {"test", 42};
+}
+
+auto result = get_data();
+std::string str = result.first;
+int num = result.second;
+
+// 结构化绑定方法
+auto [str, num] = get_data();  // 一行完成解包
 ```
 
