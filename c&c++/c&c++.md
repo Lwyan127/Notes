@@ -1124,7 +1124,39 @@ int main() {
 
 ## getline函数
 
-- 当我们用cin对string进行流提取时，由于cin遇到空格和换行会停止读取，所以我们如果想要读取带有空格的字符串就会出现读取不完整的现象。此时就需要用到getline函数，getline函数可以获取一行字符串，即遇到换行符才会停止读取，遇到空格不会停止。
+```cpp
+using namespace std;
+getline(basic_istream<char>& is, string& str, char delim);
+```
+
+**参数**：
+
+- `is`：输入流（如 `cin`、`stringstream` 等）
+- `str`：接收读取结果的字符串
+- `delim`：分隔符（可选参数，默认是 `'\n'`，即换行符）
+
+**功能**：
+
+从输入流 `is` 中读取字符，直到遇到 **分隔符 `delim`** 或 **流结束** 为止，将读取的字符（不包括分隔符本身）存入 `str`，并 **丢弃分隔符**（不会存入 `str`）。
+
+```cpp
+vector<string> split(const string& s, char delim) {
+    vector<string> res;
+    stringstream ss(s);  // 创建一个字符串流对象，使用s来初始化
+    string token;
+    while (getline(ss, token, delim)) {
+        res.push_back(token);
+    }
+    return res;
+}
+// 该函数将例如"12.345.1"分割，如下为使用
+string str = "12.345.1";
+vector<string> res = split(str, '.');
+```
+
+
+
+- 当我们用cin对string进行流提取时，由于cin遇到空格和换行会停止读取，所以我们如果想要读取带有空格的字符串就会出现读取不完整的现象。此时就需要用到getline函数，getline函数可以获取一行字符串，即遇到换行符（getline最后一个参数，默认是\n）才会停止读取，遇到空格不会停止。
 
 ```cpp
 #include <iostream>
@@ -1139,7 +1171,6 @@ int main() {
     cout << s << endl;
     return 0;
 }
-
 ```
 
 ## string与char相互转化

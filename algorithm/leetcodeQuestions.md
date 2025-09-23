@@ -391,3 +391,36 @@ public:
 };
 ```
 
+## [165. 比较版本号](https://leetcode.cn/problems/compare-version-numbers/)
+
+这道题使用了getline来分割诸如"1.23.345"这样的字符串
+
+```cpp
+class Solution {
+    vector<string> split(const string& s, char delim) {
+        vector<string> res;
+        stringstream ss(s);  // 创建一个字符串流对象，使用s来初始化
+        string token;
+        while (getline(ss, token, delim)) {
+            res.push_back(token);
+        }
+        return res;
+    }
+
+public:
+    int compareVersion(string version1, string version2) {
+        auto a = split(version1, '.');
+        auto b = split(version2, '.');
+        int n = a.size(), m = b.size();
+        for (int i = 0; i < n || i < m; i++) {
+            int ver1 = i < n ? stoi(a[i]) : 0;
+            int ver2 = i < m ? stoi(b[i]) : 0;
+            if (ver1 != ver2) {
+                return ver1 < ver2 ? -1 : 1;
+            }
+        }
+        return 0;
+    }
+};
+```
+
