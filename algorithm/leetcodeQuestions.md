@@ -424,3 +424,23 @@ public:
 };
 ```
 
+## [611. 有效三角形的个数](https://leetcode.cn/problems/valid-triangle-number/)
+
+排序+双指针：固定最大的一边，找另外两边，和大于第三边计算并右指针左移，和小于第三边左指针右移.
+
+其中有个值得记录的一点是：
+
+```cpp
+if (nums[left] + nums[right] > nums[i]) {
+    // 符合：两个小边大于最长边
+    // 这里有个隐藏条件，由于排序了
+    // 如果 nums[left] + nums[right] > nums[i]
+    // 那么 [left, right - 1] 都符合（因为 nums[left] 是最小的边了）
+    ans += right - left
+    right--
+} else {
+    left++
+}
+```
+
+这里不是`ans++`，而是`ans += right - left`，因为如果`nums[left] + nums[right] > nums[i]`即能形成三角形，则`nums[left+1]`一直到`nums[right-1]`都是可以替代`nums[left]`成为最左边一条边的。
