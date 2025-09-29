@@ -444,3 +444,29 @@ if (nums[left] + nums[right] > nums[i]) {
 ```
 
 这里不是`ans++`，而是`ans += right - left`，因为如果`nums[left] + nums[right] > nums[i]`即能形成三角形，则`nums[left+1]`一直到`nums[right-1]`都是可以替代`nums[left]`成为最左边一条边的。
+
+## [1039. 多边形三角剖分的最低得分](https://leetcode.cn/problems/minimum-score-triangulation-of-polygon/)
+
+非常好的一道动态规划题。和[516. 最长回文子序列](https://leetcode.cn/problems/longest-palindromic-subsequence/)有点类似。最长回文子序列的`dp[i][j]`每次只需要找到`dp[i+1][j]`和`dp[i][j-1]`进行对比即可，这道题是个平面图形，因此需要让`k`从i到j都来进行对比，如下![image-20250929154627038](C:\Users\ylw\Documents\workspace\notes\algorithm\leetcodeQuestions.assets\image-20250929154627038.png)
+
+代码如下：
+
+```cpp
+class Solution {
+public:
+    int minScoreTriangulation(vector<int>& values) {
+        int sz = values.size();
+        vector<vector<int>> dp(sz, vector<int>(sz, 0));
+        for (int i = sz - 1; i >= 0; i--) {
+            for (int j = i + 2; j < sz; j++) {
+                dp[i][j] = INT_MAX;
+                for (int k = i + 1; k < j; k++) {
+                    dp[i][j] = min(dp[i][j], dp[i][k] + dp[k][j] + values[i] * values[j] * values[k]);
+                }
+            }
+        }
+        return dp[0][sz - 1];
+    }
+};
+```
+
