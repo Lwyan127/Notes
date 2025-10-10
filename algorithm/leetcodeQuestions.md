@@ -470,3 +470,9 @@ public:
 };
 ```
 
+## [3147. 从魔法师身上吸取的最大能量](https://leetcode.cn/problems/taking-maximum-energy-from-the-mystic-dungeon/)
+
+动态规划题：
+
+- Let `dp[i]` denote the energy we gain starting from index `i`.
+- We can notice, that ` dp[i] = dp[i + k] + energy[i]`.
