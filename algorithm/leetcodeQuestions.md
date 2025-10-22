@@ -476,3 +476,83 @@ public:
 
 - Let `dp[i]` denote the energy we gain starting from index `i`.
 - We can notice, that ` dp[i] = dp[i + k] + energy[i]`.
+
+## 差分 [1094. 拼车](https://leetcode.cn/problems/car-pooling/)
+
+使用差分数组：
+
+![image-20251022231430553](leetcodeQuestions.assets/image-20251022231430553.png)
+
+考虑数组`a = [1,3,3,5,8]`，对其中的相邻元素两两作差（右边减左边），得到数组`[2,0,2,3]`。然后在开头补上`a[0]`，得到差分数组`d=[1,2,0,2,3]`，这有什么用呢？如果从左到右累加 d 中的元素，我们就「还原」回了 a 数组`[1,3,3,5,8]`。这类似求导与积分。
+
+这又有什么用呢？现在把连续子数组 `a[1],a[2],a[3]`都加上 10，得到 `a’=[1,13,13,15,8]`。再次两两作差，并在开头补上 `a'[0]`，得到差分数组`d′=[1,12,0,2,−7]`。
+
+对比 d 和 d′，可以发现只有`d[1]`和`d[4]`变化了，这意味着**对 a 中连续子数组的操作**，可以转变成对差分数组 d 中**两个数**的操作，**即`O(n)`变成`O(1)`**。
+
+![image-20251022231829042](leetcodeQuestions.assets/image-20251022231829042.png)
+
+注：二维也可以使用差分数组。
+
+到了这道题，由于你不知道他这个数组会有多大，因此可以使用map这个有序的哈希表来代替这个差分数组。
+
+进行`map[from]+=numPassengers`和`map[to]-=numPassengers`，在差分数组里这意味着从from到to-1都是numPassengers个人。最后还原原来的数组时，使用迭代器遍历map，遍历的话只会遍历每个from和to节点的车上人数，但是从一个节点到下一个节点中间人数不会变化，所以没啥事。
+
+```c++
+class Solution {
+public:
+    bool carPooling(vector<vector<int>>& trips, int capacity) {
+        map<int, int> mp;
+        for (auto trip: trips) {
+            mp[trip[1]] += trip[0];
+            mp[trip[2]] -= trip[0];
+        }
+        int sum = 0;
+        for (auto it = mp.begin(); it != mp.end(); it++) {
+            sum += it->second;
+            if (sum > capacity) return false;
+        }
+        return true;
+    }
+};
+```
+
+## [3347. 执行操作后元素的最高频率 II](https://leetcode.cn/problems/maximum-frequency-of-an-element-after-performing-operations-ii/)
+
+和[3346. 执行操作后元素的最高频率 I](https://leetcode.cn/problems/maximum-frequency-of-an-element-after-performing-operations-i/)一样，数据范围不一样，这题不可以枚举。
+
+两个方法，1：差分数组，2：滑动窗口
+
+**差分数组**：
+
+根据题意，求一个数组a，a[i]为原数组执行完所有操作后i的最大出现次数。对于nums数组中的每个num，它可以变成[num-k,num+k]中任意一个数，因此，只需要对所有的[num-k,num+k]范围叠加起来，i在k个范围中，则其最大出现次数就是k。
+
+根据上面的解释，我们发现他需要范围内每个下标”++“的操作，因此我们想到了**差分数组**来把`O(n)`变成`O(1)`。
+
+但是这道题有一个numOperations最大操作次数，最大出现次数不等于操作的次数，比如i=4时原数组中已经有了4，那么4就自己不用操作，因此操作的次数要减去cnt[i]，即i在原数组中出现的次数。
+
+有以下代码：
+
+```c++
+class Solution {
+public:
+    int maxFrequency(vector<int>& nums, int k, int numOperations) {
+        unordered_map<int, int> cnt;
+        map<int, int> diff;
+        for (int x : nums) {
+            cnt[x]++;
+            diff[x]; // 把 x 插入 diff，以保证下面能遍历到 x
+            diff[x - k]++; // 把 [x-k, x+k] 中的每个整数的出现次数都加一
+            diff[x + k + 1]--;
+        }
+
+        int ans = 0, sum_d = 0;
+        for (auto& [x, d] : diff) {
+            sum_d += d;
+            ans = max(ans, cnt[x] + min(sum_d - cnt[x], numOperations));
+        }
+        return ans;
+    }
+};
+```
+
+这道题使用了map这个有序的哈希表来代替这个差分数组，但是最后由差分数组还原数组（数组a，a[i]为原数组执行完所有操作后i的最大出现次数）时，使用的是迭代器在map中遍历，因此在制作差分数组时要插入diff[num]=0，这样在num的位置能停一下，操作次数能减去cnt[num]，得到真正的操作次数（有不能超过numOperations的限制），而不是单纯的最大出现次数。
