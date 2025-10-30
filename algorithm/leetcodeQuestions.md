@@ -572,3 +572,29 @@ public:
   结论：**我们只需考虑 y+k 在 nums 中时的 y**！
 
   于是，我们枚举`x = nums[right]`，计算在`[x - 2k, x]`中在nums中的元素个数即可，这些数都变成 x - k。注意个数不能超过 numOperations。
+
+## [1526. 形成目标数组的子数组最少增加次数](https://leetcode.cn/problems/minimum-number-of-increments-on-subarrays-to-form-a-target-array/)
+
+本题有「区间加一」操作，这非常适合用**差分数组**做。
+
+`target = [3,1,1,2]`，差分数组为`d = [3,−2,0,1]`。
+
+由于全 0 数组的差分数组也全为 0，所以相当于把`[0,0,0,0]`变成`[3,−2,0,1]`的最小操作次数。
+
+「区间加一」操作相当于对两个位置的数，靠左的数加一，靠右的数减一。
+
+注意到，无论每次操作修改的是两个数还是一个数，一定会把一个数加一。所以最小操作次数等于加一的次数，即`d`中**所有正数之和**。
+
+```c++
+class Solution {
+public:
+    int minNumberOperations(vector<int>& target) {
+        int ans = target[0];
+        for (int i = 1; i < target.size(); i++) {
+            ans = max(ans, target[i] - target[i - 1] + ans);
+        }
+        return ans;
+    }
+};
+```
+
