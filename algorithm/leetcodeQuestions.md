@@ -598,3 +598,62 @@ public:
 };
 ```
 
+## [3607. 电网维护](https://leetcode.cn/problems/power-grid-maintenance/)
+
+这道题我先使用了并查集，因为是节点在若干个集合中，但是超时了。因为除了要知道在同一个集合里，还要知道这个集合中最小的那个节点。
+
+所以用小顶堆，同时要保存若干个小顶堆，每次建堆时，使用dfs遍历这个电网。
+
+具体实现使用**优先队列**:
+
+```cpp
+class Solution {
+public:
+    priority_queue<int, vector<int>, greater<int>> pq;  // greater在数组中是升序，小顶堆，自定义比较的话是return a > b
+    vector<priority_queue<int, vector<int>, greater<int>>> hps;
+
+    void dfs(int x, int c, vector<int>& belong, vector<vector<int>>& grid) {
+        belong[x] = hps.size();
+        pq.push(x);
+        for (auto& elec : grid[x]) {
+            if (belong[elec] == -1) {
+                dfs(elec, c, belong, grid);
+            }
+        }
+    }
+
+    vector<int> processQueries(int c, vector<vector<int>>& connections, vector<vector<int>>& queries) {
+        vector<vector<int>> grid(c + 1);
+        vector<int> ans;
+        vector<int> belong(c + 1, -1);
+        vector<bool> offline(c + 1, true);
+        for (auto& con: connections) {
+            grid[con[0]].emplace_back(con[1]);
+            grid[con[1]].emplace_back(con[0]);
+        }
+        for (int i = 1; i <= c; i++) {
+            if (belong[i] == -1) {
+                dfs(i, c, belong, grid);
+            }
+            hps.emplace_back(move(pq));  // 使用移动语义，这样pq被转到hps中（而不是拷贝），则现在的pq中变为空的了
+        }
+        for (auto& q : queries) {
+            if (q[0] == 2) {
+                offline[q[1]] = false;
+            } else {
+                if (offline[q[1]]) {
+                    ans.emplace_back(q[1]);
+                } else {
+                    auto& h = hps[belong[q[1]]];
+                    while (!h.empty() && offline[h.top()] == false) {
+                        h.pop();
+                    }
+                    ans.emplace_back(h.empty() ? -1 : h.top());
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+
