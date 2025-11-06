@@ -2905,7 +2905,7 @@ priority_queue<int> myQueue(myVector.begin(), myVector.end()); // 使用vector�
 **3.设置优先级**
 
 ```c++
-priority_queue<int, vector<int>, less<int> >pq;
+priority_queue<int, vector<int>, less<int>>pq;
 //最后两个>之间要有空格
 ```
 
@@ -2916,9 +2916,11 @@ priority_queue<int, vector<int>, less<int> >pq;
 > less:是一个函数对象，用于按照升序对元素进行比较。
 
 ```c++
-priority_queue<int,vector<int>, greater<int>  > pq;
+priority_queue<int,vector<int>, greater<int>> pq;
 //此为降序
 ```
+
+**对于greater，如果是数组则为升序，是小顶堆。如果是自定义函数的话，作为小顶堆或者说升序的数组，里面写的是`return a > b;`**
 
 **自定义排序：**
 

@@ -1466,7 +1466,7 @@ public:
     class mycomparison {
     public:
         bool operator()(const pair<int, int>& lhs, const pair<int, int>& rhs) {
-            return lhs.second > rhs.second;  // 从堆底到堆顶 降序排序 即小顶堆 
+            return lhs.second > rhs.second;  // 如果是数组的话，升序排序，即小顶堆，注意和sort的自定义函数正好相反
         }
     };
     vector<int> topKFrequent(vector<int>& nums, int k) {
