@@ -758,7 +758,7 @@ public:
 
 **滑动窗口**找最大值和最小值看[239. 滑动窗口最大值](https://leetcode.cn/problems/sliding-window-maximum/)，使用单调队列，在leetcode-master中有。
 
-```
+```c++
 const int MOD = 1'000'000'007; // 模数，避免溢出
 int n = nums.size();
 deque<int> min_q, max_q; // 单调队列：存索引（而非值），便于判断是否在窗口内
@@ -766,5 +766,41 @@ vector<int> f(n + 1);    // DP数组：f[i] = 前i个元素的合法方案数
 f[0] = 1;                // 边界：空数组方案数为1
 long long sum_f = 0;     // 滑动窗口内f[j]的和（long long避免溢出）
 int left = 0;            // 滑动窗口左边界（合法j的最小索引）
+
+for (int i = 0; i < n; i++) {
+    int x = nums[i];
+    // 1. 入：将当前i加入窗口，维护单调队列和sum_f
+    sum_f += f[i]; // 窗口内新增f[i]，sum_f累加
+
+    // 维护min_q（单调递增）：移除队尾≥x的索引，保证队列递增
+    while (!min_q.empty() && x <= nums[min_q.back()]) {
+        min_q.pop_back();
+    }
+    min_q.push_back(i);
+
+    // 维护max_q（单调递减）：移除队尾≤x的索引，保证队列递减
+    while (!max_q.empty() && x >= nums[max_q.back()]) {
+        max_q.pop_back();
+    }
+    max_q.push_back(i);
+    
+    // 2. 出：若窗口内max-min>k，右移左边界left，缩小窗口
+    while (nums[max_q.front()] - nums[min_q.front()] > k) {
+        sum_f -= f[left]; // 左边界移出窗口，sum_f减去对应f[left]
+        left++;           // 左边界右移
+        // 清理队列中不在窗口内的索引（队首<left则弹出）
+        if (min_q.front() < left) {
+            min_q.pop_front();
+        }
+        if (max_q.front() < left) {
+            max_q.pop_front();
+        }
+    }
+    
+    // 3. 更新DP：前i+1个元素的方案数 = 窗口内f[j]的和（模MOD）
+    f[i + 1] = sum_f % MOD;
+}
+
+return f[n]; // 最终答案：前n个元素的合法分割方案数
 ```
 
