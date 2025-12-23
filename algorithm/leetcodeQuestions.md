@@ -811,3 +811,95 @@ return f[n]; // 最终答案：前n个元素的合法分割方案数
 ## [3531. 统计被覆盖的建筑](https://leetcode.cn/problems/count-covered-buildings/)
 
 做这道题的时候犯蠢了，其实只要先统计每行/每列的最大值/最小值，然后遍历buildings不是最大值/最小值就是符合条件的点。不要去遍历然后找符合条件的点。
+
+## [2054. 两个最好的不重叠活动](https://leetcode.cn/problems/two-best-non-overlapping-events/)
+
+比较难的一道题。
+
+因为只要选择两个活动，所以思路可以是：
+
+设参加的第二个活动的开始时间为 *startTime*，那么第一个活动选哪个最好？**在结束时间小于 *startTime* 的活动中，选择价值最大的活动**。
+
+因此，先按照结束时间排序events，排序后，对比如下两个活动：
+
+- 活动一：结束于 3 时刻，价值 999。
+
+- 活动二：结束于 6 时刻，价值 9。
+
+活动二的结束时间又晚，价值又小，全方面不如活动一，是垃圾数据，直接忽略。
+
+换句话说，在遍历 events 的过程中（注意 events 已按照结束时间排序），只在遇到更大价值的活动时，才记录该活动。把这些活动记录到一个栈（列表）中，那么从栈底到栈顶，结束时间是递增的，价值也是递增的，非常适合二分查找。
+
+枚举第二个活动，在单调栈中二分查找结束时间严格小于 *startTime* 的最后一个活动，即为价值最大的第一个活动。如果没找到，那么只能选一个活动（那就在栈底放个0好了，用来选一个活动）。
+
+```cpp 
+class Solution {
+public:
+    static bool cmp(vector<int>& x, vector<int>& y) {
+        if (x[1] < y[1]) return true;
+        else if (x[1] > y[1]) return false;
+        else {
+            if (x[0] < y[0]) return true;
+        }
+        return false;
+    }
+
+    int binaryFind(vector<pair<int, int>>&st, int t) {
+        int res = 0;
+        int l = 0, r = st.size() - 1;
+        while (l <= r) {
+            int m = l + (r - l) / 2;
+            if (st[m].first < t) {
+                res = m;
+                l = m + 1;
+            } else {
+                r = m - 1;
+            }
+        }
+        return res;
+    }
+
+    int maxTwoEvents(vector<vector<int>>& events) {
+        sort(events.begin(), events.end(), cmp);
+        int sz = events.size();
+        int minn = events[0][2];
+        vector<pair<int, int>> st = {{0, 0}};
+        int ans = 0;
+        for (auto& e: events) {
+            int stt_time = e[0], v = e[2];
+            int res = binaryFind(st, stt_time);
+            ans = max(ans, st[res].second + v);
+            if (v > st.back().second) st.emplace_back(e[1], v);
+        }
+        return ans;
+    }
+};
+```
+
+然后，标准答案用了c++20的一些特性，还有一个c++20range库的一个二分查找函数。
+
+```cpp
+class Solution {
+public:
+    int maxTwoEvents(vector<vector<int>>& events) {
+        // 按照结束时间排序
+        ranges::sort(events, {}, [](auto& e) { return e[1]; });
+
+        // 从栈底到栈顶，结束时间递增，价值递增
+        vector<pair<int, int>> st = {{0, 0}}; // 栈底哨兵
+        int ans = 0;
+        for (auto& e : events) {
+            int start_time = e[0], value = e[2];
+            // 二分查找最后一个结束时间 < start_time 的活动
+            auto it = --ranges::lower_bound(st, start_time, {}, &pair<int, int>::first);
+            ans = max(ans, it->second + value);
+            // 遇到比栈顶更大的价值，入栈
+            if (value > st.back().second) {
+                st.emplace_back(e[1], value);
+            }
+        }
+        return ans;
+    }
+};
+```
+
