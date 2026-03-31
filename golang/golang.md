@@ -641,6 +641,181 @@ m["group1"] = append(m["group1"], "a", "b")
 
 
 
+# list
+
+## 1. 定义
+
+- `container/list` 是 Go 标准库实现的**双向链表**
+- 支持**头尾快速增删**，可作为 **list / stack / queue / deque** 使用
+- 元素类型为 `any`（空接口），取出时需要**类型断言**
+- 不支持随机下标访问（不能像 slice 那样 `l[i]`）
+
+------
+
+## 2. 基本使用步骤
+
+1. 导入包 `import "container/list"`
+2. 创建链表 `l := list.New()`
+3. 头尾增删元素
+4. 遍历访问
+5. 类型断言取值
+
+------
+
+## 3. 常用方法一览
+
+### 创建
+
+```go
+l := list.New()   // 创建空双向链表
+```
+
+### 长度
+
+```go
+length := l.Len()
+```
+
+### 增（插入）
+
+```go
+l.PushBack(10)        // 尾部添加
+l.PushFront(20)       // 头部添加
+l.InsertAfter(30, e)  // 在元素 e 后插入
+l.InsertBefore(40, e) // 在元素 e 前插入
+```
+
+### 删
+
+```go
+l.Remove(e)      // 删除指定元素 e
+l.Init()         // 清空链表
+```
+
+### 查 / 取
+
+```go
+e := l.Front()   // 取第一个元素
+e := l.Back()    // 取最后一个元素
+e.Value          // 获取元素值（需要断言）
+l.Len()          // 元素个数
+```
+
+### 遍历
+
+```go
+// 从前到后
+for e := l.Front(); e != nil; e = e.Next() {
+}
+
+// 从后到前
+for e := l.Back(); e != nil; e = e.Prev() {
+}
+```
+
+------
+
+## 4. 完整示例
+
+```go
+package main
+
+import (
+	"container/list"
+	"fmt"
+)
+
+func main() {
+	// 1. 创建链表
+	l := list.New()
+
+	// 2. 添加元素
+	l.PushBack(1)
+	l.PushBack(2)
+	l.PushFront(0)
+
+	// 3. 遍历
+	fmt.Print("遍历：")
+	for e := l.Front(); e != nil; e = e.Next() {
+		val := e.Value.(int) // 类型断言
+		fmt.Print(val, " ")  // 0 1 2
+	}
+	fmt.Println()
+
+	// 4. 获取头尾
+	fmt.Println("头部:", l.Front().Value.(int)) // 0
+	fmt.Println("尾部:", l.Back().Value.(int))  // 2
+
+	// 5. 删除头部
+	first := l.Front()
+	l.Remove(first)
+
+	// 6. 删除后遍历
+	fmt.Print("删除后：")
+	for e := l.Front(); e != nil; e = e.Next() {
+		fmt.Print(e.Value.(int), " ") // 1 2
+	}
+}
+```
+
+------
+
+## 5. 用作队列（FIFO）
+
+```go
+// 入队
+l.PushBack(1)
+// 出队
+if l.Len() > 0 {
+	e := l.Front()
+	val := e.Value.(int)
+	l.Remove(e)
+}
+```
+
+## 6. 用作栈（LIFO）
+
+```go
+// 入栈
+l.PushBack(1)
+// 出栈
+if l.Len() > 0 {
+	e := l.Back()
+	val := e.Value.(int)
+	l.Remove(e)
+}
+```
+
+------
+
+## 7. 优点 & 缺点
+
+### 优点
+
+- 头尾增删 **O(1)**
+- 长度动态扩展
+- 可当双端队列 deque 使用
+
+### 缺点
+
+- 无泛型，需要类型断言
+- 不支持随机访问
+- 遍历比切片慢
+
+------
+
+## 8. 简明总结
+
+- Go 标准库链表：`container/list`，双向链表
+- 创建：`l := list.New()`
+- 增：`PushBack` / `PushFront`
+- 删：`Remove` / `Init()`
+- 遍历：`for e := l.Front(); e != nil; e = e.Next()`
+- 取值：`e.Value.(类型)`
+- 适合：队列、栈、双端队列、频繁头尾操作
+
+
+
 # sort
 
 ## 1. 定义
